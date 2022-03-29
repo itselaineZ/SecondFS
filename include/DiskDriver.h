@@ -1,7 +1,5 @@
-#include <iostream>
-#include <cstdio>
-#include <file>
-using namespace std;
+#ifndef DISKDRIVER_H
+#define DISKDRIVER_H
 
 class DiskDriver {
 public:
@@ -15,3 +13,5 @@ private:
     static const int BLOCK_SIZE = 512;  //  数据块大小为512字节
     FILE *fp;   //  磁盘镜像文件指针
 };
+
+#endif
