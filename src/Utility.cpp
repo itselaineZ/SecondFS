@@ -1,6 +1,15 @@
-#include "../include/Utility.h"
-#include "../include/Kernel.h"
-#include "../include/User.h"
+#include "Utility.h"
+#include "Kernel.h"
+#include "User.h"
+
+void Utility::MemCopy(unsigned long src, unsigned long des, unsigned int count)
+{
+	unsigned char* psrc = (unsigned char*)src;
+	unsigned char* pdes = (unsigned char*)des;
+	
+	for ( unsigned int i = 0; i < count; i++ ) 
+		pdes[i] = psrc[i];
+}
 
 void Utility::StringCopy(char* src, char* dst)
 {
@@ -44,4 +53,8 @@ void Utility::IOMove(unsigned char* from, unsigned char* to, int count)
 		*to++ = *from++;
 	}
 	return;
+}
+
+time_t Utility::time(time_t* t) {
+	return ::time(t);
 }

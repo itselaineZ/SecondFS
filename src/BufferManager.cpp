@@ -11,6 +11,13 @@ BufferManager::~BufferManager()
 	//nothing to do here
 }
 
+void BufferManager::FormatBuffer() {
+	Buf emptyBuffer;
+    for (int i = 0; i < NBUF; ++i)
+        Utility::memcpy(nBuffer + i, &emptyBuffer, sizeof(Buf));
+    InitList();
+}
+
 void BufferManager::Initialize()
 {
 	int i;

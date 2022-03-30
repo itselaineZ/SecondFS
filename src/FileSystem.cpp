@@ -27,6 +27,11 @@ FileSystem::~FileSystem()
 	//nothing to do here
 }
 
+//  格式化文件系统
+void FileSystem::FormatFS() {
+	
+}
+
 void FileSystem::Initialize()
 {
 	this->m_BufferManager = &Kernel::Instance().GetBufferManager();

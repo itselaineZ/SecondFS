@@ -34,11 +34,8 @@ public:
 	/* Destructors */
 	~OpenFileTable();
 	
-	// /* 
-	 // * @comment 根据用户系统调用提供的文件描述符参数fd，
-	 // * 找到对应的打开文件控制块File结构
-	 // */
-	// File* GetF(int fd);
+	// 格式化当前打开文件表
+	void Format();
 	/* 
 	 * @comment 在系统打开文件表中分配一个空闲的File结构
 	 */
@@ -71,17 +68,19 @@ public:
 	InodeTable();
 	/* Destructors */
 	~InodeTable();
-	
+
+	//  格式化Inode表
+	void Format();
 	/* 
 	 * @comment 初始化对g_FileSystem对象的引用
 	 */
 	void Initialize();
 	/* 
-	 * @comment 根据指定设备号dev，外存Inode编号获取对应
+	 * @comment 根据指定外存Inode编号获取对应
 	 * Inode。如果该Inode已经在内存中，对其上锁并返回该内存Inode，
 	 * 如果不在内存中，则将其读入内存后上锁并返回该内存Inode
 	 */
-	Inode* IGet(short dev, int inumber);
+	Inode* IGet(int inumber);
 	/* 
 	 * @comment 减少该内存Inode的引用计数，如果此Inode已经没有目录项指向它，
 	 * 且无进程引用该Inode，则释放此文件占用的磁盘块。
@@ -94,10 +93,10 @@ public:
 	void UpdateInodeTable();
 	
 	/* 
-	 * @comment 检查设备dev上编号为inumber的外存inode是否有内存拷贝，
+	 * @comment 检查编号为inumber的外存inode是否有内存拷贝，
 	 * 如果有则返回该内存Inode在内存Inode表中的索引
 	 */
-	int IsLoaded(short dev, int inumber);
+	int IsLoaded(int inumber);
 	/* 
 	 * @comment 在内存Inode表中寻找一个空闲的内存Inode
 	 */

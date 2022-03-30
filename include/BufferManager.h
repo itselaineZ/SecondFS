@@ -14,6 +14,8 @@ public:
 public:
 	BufferManager();
 	~BufferManager();
+
+	void FormatBuffer();				//  格式化缓存控制块
 	
 	void Initialize();					/* 缓存控制块队列的初始化。将缓存控制块中b_addr指向相应缓冲区首地址。*/
 	

@@ -1,5 +1,6 @@
-#include "../include/OpenFileManager.h"
-#include "../include/Kernel.h"
+#include "OpenFileManager.h"
+#include "Kernel.h"
+#include "Utility.h"
 
 /*==============================class OpenFileTable===================================*/
 /* 系统全局打开文件表对象实例的定义 */
@@ -13,6 +14,13 @@ OpenFileTable::OpenFileTable()
 OpenFileTable::~OpenFileTable()
 {
 	//nothing to do here
+}
+
+//  格式化当前打开文件表
+void OpenFileTable::Format() {
+	File emptyFile;
+	for (int i = 0; i <OpenFileTable::NFILE; ++ i)
+		Utility::MemCopy(m_File+i, &emptyFile, sizeof(File));
 }
 
 /*作用：进程打开文件描述符表中找的空闲项  之 下标  写入 u_ar0[EAX]*/
@@ -91,61 +99,49 @@ InodeTable::~InodeTable()
 	//nothing to do here
 }
 
+//  格式化Inode表
+void InodeTable::Format() {
+	INode emptyINode;
+    for (int i = 0; i < INodeTable::NINODE; ++i) 
+        Utility::MemCopy(m_INode + i, &emptyINode, sizeof(INode));
+}
+
 void InodeTable::Initialize()
 {
 	/* 获取对g_FileSystem的引用 */
 	this->m_FileSystem = &Kernel::Instance().GetFileSystem();
 }
 
-Inode* InodeTable::IGet(short dev, int inumber)
+Inode* InodeTable::IGet(int inumber)
 {
 	Inode* pInode;
 	User& u = Kernel::Instance().GetUser();
 
 	while(true)
 	{
-		/* 检查指定设备dev中编号为inumber的外存Inode是否有内存拷贝 */
-		int index = this->IsLoaded(dev, inumber);
+		/* 检查编号为inumber的外存Inode是否有内存拷贝 */
+		int index = this->IsLoaded(inumber);
 		if(index >= 0)	/* 找到内存拷贝 */
 		{
 			pInode = &(this->m_Inode[index]);
 			/* 如果该内存Inode被上锁 */
-			if( pInode->i_flag & Inode::ILOCK )
-			{
-				/* 增设IWANT标志，然后睡眠 */
-				pInode->i_flag |= Inode::IWANT;
+			// if( pInode->i_flag & Inode::ILOCK )
+			// {
+			// 	/* 增设IWANT标志，然后睡眠 */
+			// 	pInode->i_flag |= Inode::IWANT;
 				
-				u.u_procp->Sleep((unsigned long)&pInode, ProcessManager::PINOD);
+			// 	u.u_procp->Sleep((unsigned long)&pInode, ProcessManager::PINOD);
 				
-				/* 回到while循环，需要重新搜索，因为该内存Inode可能已经失效 */
-				continue;
-			}
-
-			/* 如果该内存Inode用于连接子文件系统，查找该Inode对应的Mount装配块 */
-			if( pInode->i_flag & Inode::IMOUNT )
-			{
-				Mount* pMount = this->m_FileSystem->GetMount(pInode);
-				if(NULL == pMount)
-				{
-					/* 没有找到 */
-					Utility::Panic("No Mount Tab...");
-				}
-				else
-				{
-					/* 将参数设为子文件系统设备号、根目录Inode编号 */
-					dev = pMount->m_dev;
-					inumber = FileSystem::ROOTINO;
-					/* 回到while循环，以新dev，inumber值重新搜索 */
-					continue;
-				}
-			}
-
+			// 	/* 回到while循环，需要重新搜索，因为该内存Inode可能已经失效 */
+			// 	continue;
+			// }
+			
 			/* 
 			 * 程序执行到这里表示：内存Inode高速缓存中找到相应内存Inode，
 			 * 增加其引用计数，增设ILOCK标志并返回之
 			 */
 			pInode->i_count++;
-			pInode->i_flag |= Inode::ILOCK;
+			// pInode->i_flag |= Inode::ILOCK;
 			return pInode;
 		}
 		else	/* 没有Inode的内存拷贝，则分配一个空闲内存Inode */
@@ -161,9 +157,8 @@ Inode* InodeTable::IGet(short dev, int inumber)
 			else	/* 分配空闲Inode成功，将外存Inode读入新分配的内存Inode */
 			{
 				/* 设置新的设备号、外存Inode编号，增加引用计数，对索引节点上锁 */
-				pInode->i_dev = dev;
 				pInode->i_number = inumber;
-				pInode->i_flag = Inode::ILOCK;
+				// pInode->i_flag = Inode::ILOCK;
 				pInode->i_count++;
 				pInode->i_lastr = -1;
 
@@ -208,7 +203,7 @@ void InodeTable::IPut(Inode *pNode)
 		 * 上锁，因为在整个释放过程中可能因为磁盘操作而使得该进程睡眠，
 		 * 此时有可能另一个进程会对该内存Inode进行操作，这将有可能导致错误。
 		 */
-		pNode->i_flag |= Inode::ILOCK;
+		// pNode->i_flag |= Inode::ILOCK;
 
 		/* 该文件已经没有目录路径指向它 */
 		if(pNode->i_nlink <= 0)
@@ -217,14 +212,14 @@ void InodeTable::IPut(Inode *pNode)
 			pNode->ITrunc();
 			pNode->i_mode = 0;
 			/* 释放对应的外存Inode */
-			this->m_FileSystem->IFree(pNode->i_dev, pNode->i_number);
+			this->m_FileSystem->IFree(pNode->i_number);
 		}
 
 		/* 更新外存Inode信息 */
 		pNode->IUpdate(Time::time);
 
 		/* 解锁内存Inode，并且唤醒等待进程 */
-		pNode->Prele();
+		// pNode->Prele();
 		/* 清除内存Inode的所有标志位 */
 		pNode->i_flag = 0;
 		/* 这是内存inode空闲的标志之一，另一个是i_count == 0 */
@@ -233,7 +228,7 @@ void InodeTable::IPut(Inode *pNode)
 
 	/* 减少内存Inode的引用计数，唤醒等待进程 */
 	pNode->i_count--;
-	pNode->Prele();
+	// pNode->Prele();
 }
 
 void InodeTable::UpdateInodeTable()
@@ -256,12 +251,12 @@ void InodeTable::UpdateInodeTable()
 	}
 }
 
-int InodeTable::IsLoaded(short dev, int inumber)
+int InodeTable::IsLoaded(int inumber)
 {
 	/* 寻找指定外存Inode的内存拷贝 */
 	for(int i = 0; i < InodeTable::NINODE; i++)
 	{
-		if( this->m_Inode[i].i_dev == dev && this->m_Inode[i].i_number == inumber && this->m_Inode[i].i_count != 0 )
+		if( this->m_Inode[i].i_number == inumber && this->m_Inode[i].i_count != 0 )
 		{
 			return i;	
 		}

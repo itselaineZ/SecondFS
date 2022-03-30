@@ -67,6 +67,9 @@ public:
 	/* Destructors */
 	~FileSystem();
 
+	//  格式化文件系统
+	void FormatFS();
+
 	/* 
 	 * @comment 初始化成员变量
 	 */
