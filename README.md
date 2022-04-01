@@ -20,3 +20,6 @@ add INodeTable::Format()
 add BufferManager()
 
 add FileSystem::FormatFS()      didn't finish
+
+# 2022/4/1
+coding on main.cpp-"Fformat"

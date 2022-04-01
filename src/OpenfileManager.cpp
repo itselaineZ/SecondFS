@@ -101,9 +101,9 @@ InodeTable::~InodeTable()
 
 //  格式化Inode表
 void InodeTable::Format() {
-	INode emptyINode;
-    for (int i = 0; i < INodeTable::NINODE; ++i) 
-        Utility::MemCopy(m_INode + i, &emptyINode, sizeof(INode));
+	Inode emptyINode;
+    for (int i = 0; i < InodeTable::NINODE; ++i) 
+        Utility::MemCopy(m_Inode + i, &emptyINode, sizeof(Inode));
 }
 
 void InodeTable::Initialize()

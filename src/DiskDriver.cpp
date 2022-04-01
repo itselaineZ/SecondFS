@@ -1,14 +1,15 @@
-#include "../include/DiskDriver.h"
+#include <iostream>
+#include "DiskDriver.h"
 
-const char* DiskDriver::DISK_FILE_NAME = "1952339-张馨月.img"
+const char* DiskDriver::DISK_FILE_NAME = "1952339-SecondFS.img";
 
-void DiskDriver::DiskDriver(){
+DiskDriver::DiskDriver(){
     fp = fopen(DISK_FILE_NAME, "rb+");
 }
 
-void DiskDriver::~DiskDriver(){
+DiskDriver::~DiskDriver(){
     if (fp){
-        close(fp);
+        fclose(fp);
     }
 }
 
@@ -20,11 +21,27 @@ void DiskDriver::Initialize(){
     }
 }
 
+/*
 void DiskDriver::IO(Buf* bp){
-    if (bp.b_flags & BUF::B_WRITE){ //  写操作
+    if (bp->b_flags & Buf::B_WRITE){ //  写操作
+        if (offset >= 0) {
+            fseek(fp, offset, origin);
+        }
+        fread(buffer, size, 1, fp);
+    }
+    else if (bp->b_flasg & Buf::B_READ){    //  读操作
 
     }
-    else if (bp.b_flasg & BUF::B_READ){
+}*/
 
-    }
+void DiskDriver::read(void* buffer, unsigned int size, int offset, unsigned int origin) {
+    if (offset >= 0)
+        fseek(fp, offset, origin);
+    fread(buffer, size, 1, fp);
+}
+
+void DiskDriver::write(const void* buffer, unsigned int size, int offset, unsigned int origin) {
+    if (offset >= 0) 
+        fseek(fp, offset, origin);
+    fwrite(buffer, size, 1, fp);
 }

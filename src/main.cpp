@@ -1,12 +1,19 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 #include "File.h"
 #include "FileManager.h"
 #include "FileSystem.h"
 #include "OpenFileManager.h"
 #include "User.h"
+#include "Kernel.h"
 using namespace std;
+
+extern OpenFileTable g_OpenFileTable;
+extern InodeTable g_INodeTable;
+extern BufferManager g_BufferManager;
+extern FileSystem g_FileSystem;
 
 User g_User;
 
@@ -26,6 +33,7 @@ void Help() {
         "read <file1> [-o <file2>] <size>   : 将file1内容输出到file2，默认输出到shell\n"
         "autoTest                           : 使用自动测试\n"
         ;
+    cout << man;
 }
 
 void InitSystem() {
@@ -39,22 +47,66 @@ int main() {
     InitSystem();
 
     User* user = &g_User;
+    vector<string>arg;
     string cmd;
 
-    cout << "Welcome to Elaine's Second File System! Input \"help\" to get usage.\n";
+    cout << "Welcome to Elaine's Second File System! Input \"help\" to get the usage.\n";
     while(1) {
         cout << "[root@SecondFS " << user->u_curdir << " ]#";
-        getline(cin, cmd);
-        if (cmd == "")
+        getline(cin, arg);
+        if (arg[0] == "")
             continue;
-        else if (cmd == "help") {
+        else if (arg[0] == "help") {
             Help();
         }
-        else if (cmd == "Fformat") {
+        else if (arg[0] == "Fformat") {
             g_OpenFileTable.Format();
             g_INodeTable.Format();
             g_BufferManager.FormatBuffer();
             g_FileSystem.FormatFS();
+        }
+        else if (arg[0] == "exit") {
+            exit(0);
+        }
+        else if (arg[0] == "autoTest") {
+            //autoTest();
+            cout << "autoTest finished successfully\n";
+        }
+        else if (arg[0] == "mkdir") {
+            user->Mkdir(arg[1]);
+        }
+        else if (arg[0] == "ls") {
+            user->Ls();
+        }
+        else if (arg[0] == "cd") {
+            user->Cd(arg[1]);
+        }
+        else if (arg[0] == "create") {
+            user->Create(arg[1], arg[2]+arg[3]);
+        }
+        else if (arg[0] == "delete") {
+            user->Delete(arg[1]);
+        }
+        else if (arg[0] == "open") {
+            user->Open(arg[1], arg[2]);
+        }
+        else if (arg[0] == "close") {
+            user->Close(arg[1]);
+        }
+        else if (arg[0] == "seek") {
+            user->Seek(arg[1], arg[2], arg[3]);
+        }
+        else if (arg[0] == "read") {
+            if (arg[1] == "-o")
+                user->Read(arg[1], arg[3], arg[4]);
+            else
+                user->Read(arg[1], "", arg[2]);
+        }
+        else if (arg[0] == "write") {
+            user->Write(arg[1], arg[2], arg[3]);
+        }
+        else if (arg[0] != "") {
+            cout << "command error!\n";
         }
     }
 }

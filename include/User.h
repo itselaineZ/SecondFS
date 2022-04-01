@@ -1,7 +1,6 @@
 #ifndef USER_H
 #define USER_H
 
-#include "MemoryDescriptor.h"
 #include "Process.h"
 #include "File.h"
 #include "INode.h"
@@ -58,6 +57,20 @@ public:
 	};
 
 public:
+	User();
+    ~User();
+
+    void Ls();
+    void Cd(string dirName);
+    void Mkdir(string dirName);
+    void Create(string fileName, string mode);
+    void Delete(string fileName);
+    void Open(string fileName, string mode);
+    void Close(string fd);
+    void Seek(string fd, string offset, string origin);
+    void Write(string fd, string inFile, string size);
+    void Read(string fd, string outFile, string size);
+
 	/* 系统调用相关成员 */
 	unsigned int	*u_ar0;		/* 指向核心栈现场保护区中EAX寄存器
 								存放的栈单元，本字段存放该栈单元的地址。
@@ -82,6 +95,14 @@ public:
 
 	/* 文件I/O操作 */
 	IOParameter u_IOParam;	/* 记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数 */
+
+private:
+	private:
+    bool IsError();
+    void EchoError(enum ErrorCode err);
+    int INodeMode(string mode);
+    int FileMode(string mode);
+    bool checkPathName(string path);
 };
 
 #endif

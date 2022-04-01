@@ -2,7 +2,7 @@
 #include "Kernel.h"
 #include "User.h"
 
-void Utility::MemCopy(unsigned long src, unsigned long des, unsigned int count)
+void Utility::MemCopy(void *des, const void* src, unsigned int count)
 {
 	unsigned char* psrc = (unsigned char*)src;
 	unsigned char* pdes = (unsigned char*)des;

@@ -13,7 +13,7 @@
 class Utility
 {
 public:
-	static void MemCopy(unsigned long src, unsigned long des, unsigned int count);
+	static void MemCopy(void *des, const void* src, unsigned int count);
 
 	static void StringCopy(char* src, char* dst);
 

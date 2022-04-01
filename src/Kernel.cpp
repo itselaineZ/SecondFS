@@ -30,7 +30,7 @@ Kernel& Kernel::Instance()
 void Kernel::InitBuffer()
 {
 	this->m_BufferManager = &g_BufferManager;
-	this->m_DeviceManager = &g_DeviceManager;
+	this->m_DiskDriver = &g_DiskDriver;
 
 	Diagnose::Write("Initialize Buffer...");
 	this->GetBufferManager().Initialize();

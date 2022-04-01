@@ -1,7 +1,6 @@
-#include "../include/FileManager.h"
-#include "../include/Kernel.h"
-#include "../include/Utility.h"
-#include "../include/TimeInterrupt.h"
+#include "FileManager.h"
+#include "Kernel.h"
+#include "Utility.h"
 
 /*==========================class FileManager===============================*/
 FileManager::FileManager()

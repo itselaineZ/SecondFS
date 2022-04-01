@@ -1,11 +1,11 @@
-#include "../include/FileSystem.h"
-#include "../include/Utility.h"
-#include "../include/Kernel.h"
-#include "../include/OpenFileManager.h"
-
-/*==============================class SuperBlock===================================*/
-/* 系统全局超级块SuperBlock对象 */
+#include "FileSystem.h"
+#include "Utility.h"
+#include "Kernel.h"
+#include "OpenFileManager.h"
 SuperBlock g_spb;
+extern DiskDriver g_DiskDriver;
+extern BufferManager g_BufferManager;
+/*==============================class SuperBlock===================================*/
 
 SuperBlock::SuperBlock()
 {
@@ -16,10 +16,26 @@ SuperBlock::~SuperBlock()
 {
 	//nothing to do here
 }
+
+void SuperBlock::Format() {
+	s_isize = FileSystem::INODE_ZONE_SIZE;
+    s_fsize = FileSystem::DISK_SIZE;
+    s_nfree = 0;
+    s_free[0] = -1;
+    s_ninode = 0;
+    s_flock = 0;
+    s_ilock = 0;
+    s_fmod = 0;
+    s_ronly = 0;
+    time((time_t*)&s_time);
+}
 /*==============================class FileSystem===================================*/
 FileSystem::FileSystem()
 {
-	//nothing to do here
+	diskDriver = &g_DiskDriver;
+	superBlock = &g_spb;
+	bufferManager = &g_BufferManager;
+	if ()
 }
 
 FileSystem::~FileSystem()
@@ -29,7 +45,11 @@ FileSystem::~FileSystem()
 
 //  格式化文件系统
 void FileSystem::FormatFS() {
-	
+	g_spb.Format();
+	g_DiskDriver.Initialize();
+
+	//空文件写入superBlock占据空间(不设置大小)
+	g_DiskDriver.write(&g_spb, sizeof(SuperBlock), 0);
 }
 
 void FileSystem::Initialize()

@@ -1,5 +1,6 @@
 #include "BufferManager.h"
 #include "Kernel.h"
+#include "Utility.h"
 
 BufferManager::BufferManager()
 {
@@ -14,8 +15,8 @@ BufferManager::~BufferManager()
 void BufferManager::FormatBuffer() {
 	Buf emptyBuffer;
     for (int i = 0; i < NBUF; ++i)
-        Utility::memcpy(nBuffer + i, &emptyBuffer, sizeof(Buf));
-    InitList();
+        Utility::MemCopy(m_Buf + i, &emptyBuffer, sizeof(Buf));
+    Initialize();
 }
 
 void BufferManager::Initialize()
@@ -40,7 +41,7 @@ void BufferManager::Initialize()
 		bp->b_flags = Buf::B_BUSY;
 		Brelse(bp);
 	}
-	this->m_DeviceManager = &Kernel::Instance().GetDeviceManager();
+	this->m_DiskDriver = &Kernel::Instance().GetDiskDriver();
 	return;
 }
 
