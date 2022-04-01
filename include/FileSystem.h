@@ -16,6 +16,8 @@ public:
 	SuperBlock();
 	/* Destructors */
 	~SuperBlock();
+	//  格式化文件系统存储资源管理块
+	void Format();
 	
 	/* Members */
 public:
@@ -46,7 +48,6 @@ class FileSystem
 {
 public:
 	/* static consts */
-	static const int NMOUNT = 5;			/* 系统中用于挂载子文件系统的装配块数量 */
 
 	static const int SUPER_BLOCK_SECTOR_NUMBER = 200;	/* 定义SuperBlock位于磁盘上的扇区号，占据200，201两个扇区。 */
 
@@ -60,6 +61,7 @@ public:
 	static const int DATA_ZONE_END_SECTOR = 18000 - 1;	/* 数据区的结束扇区号 */
 	static const int DATA_ZONE_SIZE = 18000 - DATA_ZONE_START_SECTOR;	/* 数据区占据的扇区数量 */
 
+	static const int DISK_SIZE = 16384;		//  磁盘所有扇区数量
 	/* Functions */
 public:
 	/* Constructors */
@@ -118,14 +120,14 @@ private:
 	 */
 	bool BadBlock(SuperBlock* spb, short dev, int blkno);
 
-	/* Members */
-public:
-	Mount m_Mount[NMOUNT];		/* 文件系统装配块表，Mount[0]用于根文件系统 */
-
 private:
 	BufferManager* m_BufferManager;		/* FileSystem类需要缓存管理模块(BufferManager)提供的接口 */
 	int updlock;				/* Update()函数的锁，该函数用于同步内存各个SuperBlock副本以及，
 								被修改过的内存Inode。任一时刻只允许一个进程调用该函数 */
+public:
+	DiskDriver* diskDriver;
+    SuperBlock* superBlock;
+	BufferManager* bufferManager;
 };
 
 #endif
