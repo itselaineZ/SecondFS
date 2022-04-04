@@ -377,45 +377,34 @@ int main() {
     }
     return 0;
 }
-void FileSystem::FormatDevice() {
-    FormatSuperBlock();
-    deviceDriver->Construct();
+void FileManager::Ls() {
+    User &u = g_User;
+    BufferManager& bufferManager = g_BufferManager;
 
-    //空文件，先写入superblock占据空间，未设置文件大小
-    deviceDriver->write(superBlock, sizeof(SuperBlock), 0);
+    INode* pINode = u.cdir;
+    Buffer* pBuffer = NULL;
+    u.IOParam.offset = 0;
+    u.IOParam.count = pINode->i_size / sizeof(DirectoryEntry);
 
-    DiskINode emptyDINode, rootDINode;
-    //根目录DiskNode
-    rootDINode.d_mode |= INode::IALLOC | INode::IFDIR;
-    rootDINode.d_nlink = 1;
-    deviceDriver->write(&rootDINode, sizeof(rootDINode));
-    
-    //从第1个DiskINode初始化，第0个固定用于根目录"/"，不可改变
-    for (int i = 1; i < FileSystem::INode_NUMBERS; ++i) {
-        if (superBlock->s_ninode < SuperBlock::MAX_NINODE) {
-            superBlock->s_inode[superBlock->s_ninode++] = i;
+    while (u.IOParam.count) {
+        if (0 == u.IOParam.offset%INode::BLOCK_SIZE) {
+            if (pBuffer) {
+                bufferManager.Brelse(pBuffer);
+            }
+            int phyBlkno = pINode->Bmap(u.IOParam.offset / INode::BLOCK_SIZE);
+            pBuffer = bufferManager.Bread(phyBlkno);
         }
-        deviceDriver->write(&emptyDINode, sizeof(emptyDINode));
+        Utility::memcpy(&u.dent, pBuffer->addr+ (u.IOParam.offset % INode::BLOCK_SIZE), sizeof(u.dent));
+        u.IOParam.offset += sizeof(DirectoryEntry);
+        u.IOParam.count--;
+
+        if (0 == u.dent.m_ino)
+            continue;
+        u.ls += u.dent.name;
+        u.ls += "\n";
     }
 
-    //空闲盘块初始化
-    char freeBlock[BLOCK_SIZE], freeBlock1[BLOCK_SIZE];
-    memset(freeBlock, 0, BLOCK_SIZE);
-    memset(freeBlock1, 0, BLOCK_SIZE);
-
-    for (int i = 0; i < FileSystem::DATA_ZONE_SIZE; ++i) {
-        if (superBlock->s_nfree >= SuperBlock::MAX_NFREE) {
-            memcpy(freeBlock1, &superBlock->s_nfree, sizeof(int) + sizeof(superBlock->s_free));
-            deviceDriver->write(&freeBlock1, BLOCK_SIZE);
-            superBlock->s_nfree = 0;
-        }
-        else {
-            deviceDriver->write(freeBlock, BLOCK_SIZE);
-        }
-        superBlock->s_free[superBlock->s_nfree++] = i + DATA_ZONE_START_SECTOR;
+    if (pBuffer) {
+        bufferManager.Brelse(pBuffer);
     }
-
-    time((time_t*)&superBlock->s_time);
-    //再次写入superblock
-    deviceDriver->write(superBlock, sizeof(SuperBlock), 0);
 }

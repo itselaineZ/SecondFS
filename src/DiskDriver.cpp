@@ -1,4 +1,3 @@
-#include <iostream>
 #include "DiskDriver.h"
 
 const char* DiskDriver::DISK_FILE_NAME = "1952339-SecondFS.img";
@@ -21,6 +20,11 @@ void DiskDriver::Initialize(){
     }
 }
 
+//  检查镜像文件是否存在
+bool DiskDriver::Exists() {
+    return fp != NULL;
+}
+
 /*
 void DiskDriver::IO(Buf* bp){
     if (bp->b_flags & Buf::B_WRITE){ //  写操作
@@ -34,13 +38,13 @@ void DiskDriver::IO(Buf* bp){
     }
 }*/
 
-void DiskDriver::read(void* buffer, unsigned int size, int offset, unsigned int origin) {
+void DiskDriver::read(void* buffer, unsigned int size, int offset = -1, unsigned int origin = SEEK_SET) {
     if (offset >= 0)
         fseek(fp, offset, origin);
     fread(buffer, size, 1, fp);
 }
 
-void DiskDriver::write(const void* buffer, unsigned int size, int offset, unsigned int origin) {
+void DiskDriver::write(const void* buffer, unsigned int size, int offset = -1, unsigned int origin = SEEK_SET) {
     if (offset >= 0) 
         fseek(fp, offset, origin);
     fwrite(buffer, size, 1, fp);
