@@ -64,6 +64,8 @@ int main() {
             g_INodeTable.Format();
             g_BufferManager.FormatBuffer();
             g_FileSystem.FormatFS();
+            cout << "Format Successfully, will be shut down automatically.\n";
+            exit(0);
         }
         else if (arg[0] == "exit") {
             exit(0);

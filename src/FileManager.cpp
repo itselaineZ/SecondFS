@@ -2,6 +2,8 @@
 #include "Kernel.h"
 #include "Utility.h"
 
+extern BufferManager g_BufferManager;
+
 /*==========================class FileManager===============================*/
 FileManager::FileManager()
 {
@@ -825,6 +827,28 @@ void FileManager::MkNod()
 		pInode->i_addr[0] = u.u_arg[2];
 	}
 	this->m_InodeTable->IPut(pInode);
+}
+
+//  列出当前Inode节点的文件项
+void Ls() {
+	User &u = Kernel::Instance().GetUser();
+	BufferManager& bufferManager = g_BufferManager;
+	
+	Inode* pInode = u.u_cdir;
+	Buf* pBuf = NULL;
+	u.u_IOParam.m_Offset = 0;	//  当前文件读写偏移量
+	//  当前还剩余的读、写字节数量，设置为当前Inode节点文件大小/目录项大小
+	u.u_IOParam.m_Count = pInode->i_size / sizeof(DirectoryEntry);
+
+	while (u.u_IOParam.m_Count) {
+		if (u.u_IOParam.m_Offset % Inode::BLOCK_SIZE == 0) {
+			if (pBuf) 
+				bufferManager.Brelse(pBuf);	//  释放
+			int phyBlkno = pInode->Bmap(u.u_IOParam.m_Offset / Inode::BLOCK_SIZE);
+			pBuf = bufferManager.Bread(phyBlkno);
+			
+		}
+	}
 }
 /*==========================class DirectoryEntry===============================*/
 DirectoryEntry::DirectoryEntry()

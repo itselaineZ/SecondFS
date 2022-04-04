@@ -127,6 +127,9 @@ public:
 
 	/* 用于建立特殊设备文件的系统调用 */
 	void MkNod();
+
+	//  列出当前Inode节点的文件项
+	void Ls();
 	
 public:
 	/* 根目录内存Inode */

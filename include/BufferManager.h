@@ -40,7 +40,7 @@ private:
 	Buf* InCore(short adev, int blkno);	/* 检查指定字符块是否已在缓存中 */ //#
 	
 private:
-	Buf bFreeList;						/* 自由缓存队列控制块 */
+	Buf* bFreeList;						/* 自由缓存队列控制块 */
 	Buf SwBuf;							/* 进程图像传送请求块 */
 	Buf m_Buf[NBUF];					/* 缓存控制块数组 */
 	unsigned char Buffer[NBUF][BUFFER_SIZE];	/* 缓冲区数组 */

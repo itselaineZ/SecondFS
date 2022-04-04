@@ -1,17 +1,18 @@
 #include "Utility.h"
 #include "User.h"
+using namespace std;    //  for string
 
 extern FileManager g_FileManager;
 
 User::User() {
     u_error = U_NOERROR;
     fileManager = &g_FileManager;
-	dirp = "/";
-    curDirPath = "/";
+	u_dirp = "/";   //  系统调用参数（一般用于pathname）设置为根目录
+    u_curdir = "/"; //  当前工作目录完整路径
     //fileManager->Open();
-	cdir = fileManager->rootDirINode;
-    pdir = NULL;
-    Utility::memset(arg, 0, sizeof(arg));
+	u_cdir = fileManager->rootDirInode; //  指向当前目录的Inode
+    u_pdir = NULL;  //  指向父目录的Inode
+    memset(u_arg, 0, sizeof(u_arg));
 }
 
 User::~User() {
@@ -22,12 +23,13 @@ void User::Mkdir(string dirName) {
     if (!checkPathName(dirName)) {
         return;
     }
-    arg[1] = INode::IFDIR;
+    u_arg[1] = Inode::IFDIR;
     fileManager->Creat();
     IsError();
 }
 
 void User::Ls() {
+    string ls;
     ls.clear();
     fileManager->Ls();
     if (IsError()) {
@@ -223,11 +225,11 @@ bool User::checkPathName(string path) {
         return false;
     }
 
-    if (path.substr(0, 2) != "..") {
-        dirp = path;
-    }
+    //  返回上级目录
+    if (path.substr(0, 2) != "..")
+        u_dirp = path;
     else {
-        string pre = curDirPath;
+        string pre = u_curdir;
         unsigned int p = 0;
         //可以多重相对路径 .. ../ ../.. ../../
         for (; pre.length() > 3 && p < path.length() && path.substr(p, 2) == ".."; ) {
@@ -236,16 +238,15 @@ bool User::checkPathName(string path) {
             p += 2;
             p += p < path.length() && path[p] == '/';
         }
-        dirp = pre + path.substr(p);
+        u_dirp = pre + path.substr(p);
     }
 
-    if (dirp.length() > 1 && dirp.back() == '/') {
-        dirp.pop_back();
-    }
+    if (u_dirp.length() > 1 && u_dirp.back() == '/')
+        u_dirp.pop_back();
 
-    for (unsigned int p = 0, q = 0; p < dirp.length(); p = q + 1) {
-        q = dirp.find('/', p);
-        q = min(q, (unsigned int)dirp.length());
+    for (unsigned int p = 0, q = 0; p < u_dirp.length(); p = q + 1) {
+        q = u_dirp.find('/', p);
+        q = min(q, (unsigned int)u_dirp.length());
         if (q - p > DirectoryEntry::DIRSIZ) {
             cout << "the fileName or dirPath can't be greater than 28 size ! \n";
             return false;

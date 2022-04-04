@@ -19,41 +19,41 @@ public:
 	/* 1~32 来自linux 的内核代码中的/usr/include/asm/errno.h, 其余for V6++ */
 	enum ErrorCode
 	{
-		NOERROR	= 0,	/* No error */
-		EPERM	= 1,	/* Operation not permitted */
-		ENOENT	= 2,	/* No such file or directory */
-		ESRCH	= 3,	/* No such process */
-		EINTR	= 4,	/* Interrupted system call */
-		EIO		= 5,	/* I/O error */
-		ENXIO	= 6,	/* No such device or address */
-		E2BIG	= 7,	/* Arg list too long */
-		ENOEXEC	= 8,	/* Exec format error */
-		EBADF	= 9,	/* Bad file number */
-		ECHILD	= 10,	/* No child processes */
-		EAGAIN	= 11,	/* Try again */
-		ENOMEM	= 12,	/* Out of memory */
-		EACCES	= 13,	/* Permission denied */
-		EFAULT  = 14,	/* Bad address */
-		ENOTBLK	= 15,	/* Block device required */
-		EBUSY 	= 16,	/* Device or resource busy */
-		EEXIST	= 17,	/* File exists */
-		EXDEV	= 18,	/* Cross-device link */
-		ENODEV	= 19,	/* No such device */
-		ENOTDIR	= 20,	/* Not a directory */
-		EISDIR	= 21,	/* Is a directory */
-		EINVAL	= 22,	/* Invalid argument */
-		ENFILE	= 23,	/* File table overflow */
-		EMFILE	= 24,	/* Too many open files */
-		ENOTTY	= 25,	/* Not a typewriter(terminal) */
-		ETXTBSY	= 26,	/* Text file busy */
-		EFBIG	= 27,	/* File too large */
-		ENOSPC	= 28,	/* No space left on device */
-		ESPIPE	= 29,	/* Illegal seek */
-		EROFS	= 30,	/* Read-only file system */
-		EMLINK	= 31,	/* Too many links */
-		EPIPE	= 32,	/* Broken pipe */
-		ENOSYS	= 100,
-		//EFAULT	= 106
+		U_NOERROR	= 0,	/* No error */
+		U_EPERM	= 1,	/* Operation not permitted */
+		U_ENOENT	= 2,	/* No such file or directory */
+		U_ESRCH	= 3,	/* No such process */
+		U_EINTR	= 4,	/* Interrupted system call */
+		U_EIO		= 5,	/* I/O error */
+		U_ENXIO	= 6,	/* No such device or address */
+		U_E2BIG	= 7,	/* Arg list too long */
+		U_ENOEXEC	= 8,	/* Exec format error */
+		U_EBADF	= 9,	/* Bad file number */
+		U_ECHILD	= 10,	/* No child processes */
+		U_EAGAIN	= 11,	/* Try again */
+		U_ENOMEM	= 12,	/* Out of memory */
+		U_EACCES	= 13,	/* Permission denied */
+		U_EFAULT  = 14,	/* Bad address */
+		U_ENOTBLK	= 15,	/* Block device required */
+		U_EBUSY 	= 16,	/* Device or resource busy */
+		U_EEXIST	= 17,	/* File exists */
+		U_EXDEV	= 18,	/* Cross-device link */
+		U_ENODEV	= 19,	/* No such device */
+		U_ENOTDIR	= 20,	/* Not a directory */
+		U_EISDIR	= 21,	/* Is a directory */
+		U_EINVAL	= 22,	/* Invalid argument */
+		U_ENFILE	= 23,	/* File table overflow */
+		U_EMFILE	= 24,	/* Too many open files */
+		U_ENOTTY	= 25,	/* Not a typewriter(terminal) */
+		U_ETXTBSY	= 26,	/* Text file busy */
+		U_EFBIG	= 27,	/* File too large */
+		U_ENOSPC	= 28,	/* No space left on device */
+		U_ESPIPE	= 29,	/* Illegal seek */
+		U_EROFS	= 30,	/* Read-only file system */
+		U_EMLINK	= 31,	/* Too many links */
+		U_EPIPE	= 32,	/* Broken pipe */
+		U_ENOSYS	= 100,
+		//U_EFAULT	= 106
 	};
 
 public:
@@ -78,7 +78,7 @@ public:
 								x86平台上使用EAX存放返回值，替代u.u_ar0[R0] */
 
 	int u_arg[5];				/* 存放当前系统调用参数 */
-	char* u_dirp;				/* 系统调用参数(一般用于Pathname)的指针 */
+	string u_dirp;				/* 系统调用参数(一般用于Pathname)的指针 */
 
 	/* 文件系统相关成员 */
 	Inode* u_cdir;		/* 指向当前目录的Inode指针 */
@@ -86,7 +86,7 @@ public:
 
 	DirectoryEntry u_dent;					/* 当前目录的目录项 */
 	char u_dbuf[DirectoryEntry::DIRSIZ];	/* 当前路径分量 */
-	char u_curdir[128];						/* 当前工作目录完整路径 */
+	string u_curdir;						/* 当前工作目录完整路径 */
 
 	ErrorCode u_error;			/* 存放错误码 */
 
@@ -97,12 +97,13 @@ public:
 	IOParameter u_IOParam;	/* 记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数 */
 
 private:
-	private:
     bool IsError();
     void EchoError(enum ErrorCode err);
     int INodeMode(string mode);
     int FileMode(string mode);
     bool checkPathName(string path);
+
+	FileManager* fileManager;
 };
 
 #endif

@@ -35,7 +35,10 @@ FileSystem::FileSystem()
 	diskDriver = &g_DiskDriver;
 	superBlock = &g_spb;
 	bufferManager = &g_BufferManager;
-	if ()
+	if (!diskDriver->Exists())
+		FormatFS();
+	else
+		LoadSuperBlock();
 }
 
 FileSystem::~FileSystem()
@@ -45,11 +48,45 @@ FileSystem::~FileSystem()
 
 //  格式化文件系统
 void FileSystem::FormatFS() {
-	g_spb.Format();
-	g_DiskDriver.Initialize();
+	superBlock->Format();
+	diskDriver->Initialize();
 
 	//空文件写入superBlock占据空间(不设置大小)
-	g_DiskDriver.write(&g_spb, sizeof(SuperBlock), 0);
+	diskDriver->write(superBlock, sizeof(SuperBlock), 0);
+	DiskInode emptyDiskInode, rootDiskInode;
+	//  根目录DiskNode
+	rootDiskInode.d_mode |= Inode::IALLOC | Inode::IFDIR;	//  文件被使用、文件类型为目录文件
+	rootDiskInode.d_nlink = 1;	//  该文件在目录树中不同路径名的数量为1
+	diskDriver->write(&rootDiskInode, sizeof(rootDiskInode));	//  磁盘写入根目录Inode信息
+
+	//  从第1个DiskInode开始初始化，第0个固定用于"/"根目录，不允许改变
+	for (int i = 1; i < FileSystem::INODE_NUM; ++ i) {
+		if (superBlock->s_ninode < SuperBlock::MAX_NINODE)	//  当前空闲外存inode数量没有超过定义的最大值
+			superBlock->s_inode[superBlock->s_ninode ++] = i;		//  向空闲外存索引表中填写inode编号
+		diskDriver->write(&emptyDiskInode, sizeof(emptyDiskInode));	//  磁盘写入空Inode占位置
+	}
+
+	//  制作两个空闲盘块，并清空
+	char freeBlock1[DiskDriver::BLOCK_SIZE], freeBlock2[DiskDriver::BLOCK_SIZE];
+	memset(freeBlock1, 0, DiskDriver::BLOCK_SIZE);
+	memset(freeBlock2, 0, DiskDriver::BLOCK_SIZE);
+
+	for (int i = 0; i < FileSystem::DATA_ZONE_SIZE; ++ i) {
+		if (superBlock->s_nfree >= SuperBlock::MAX_NFREE) {
+			//  把s_nfree和s_free（空闲盘块数和对应的盘块索引表）一起拷贝给freeblock2
+			Utility::MemCopy(freeBlock2, &(superBlock->s_nfree), sizeof(int)+sizeof(superBlock->s_free));
+			//  写入磁盘
+			diskDriver->write(&freeBlock2, DiskDriver::BLOCK_SIZE);
+			superBlock->s_nfree = 0;
+		}
+		else
+			//  空盘块写入磁盘占位置
+			diskDriver->write(freeBlock1, DiskDriver::BLOCK_SIZE);
+		superBlock->s_free[superBlock->s_nfree ++] = i + DATA_ZONE_START_SECTOR;
+	}
+	time((time_t*)&superBlock->s_time);
+	//  再次写入SuperBlock（内容已经更新完毕）
+	diskDriver->write(superBlock, sizeof(SuperBlock), 0);
 }
 
 void FileSystem::Initialize()
