@@ -95,6 +95,7 @@ public:
 
 	/* 文件I/O操作 */
 	IOParameter u_IOParam;	/* 记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数 */
+	string u_ls;
 
 private:
     bool IsError();

@@ -265,7 +265,7 @@ int Inode::Bmap(int lbn)
 
 	if(lbn >= Inode::HUGE_FILE_BLOCK)
 	{
-		u.u_error = User::EFBIG;
+		u.u_error = User::U_EFBIG;
 		return 0;
 	}
 
@@ -279,7 +279,7 @@ int Inode::Bmap(int lbn)
 		 * 文件进行扩充写入，就需要分配额外的磁盘块，并为之建立逻辑块号
 		 * 与物理盘块号之间的映射。
 		 */
-		if( phyBlkno == 0 && (pFirstBuf = fileSys.Alloc(this->i_dev)) != NULL )
+		if( phyBlkno == 0 && (pFirstBuf = fileSys.Alloc()))
 		{
 			/* 
 			 * 因为后面很可能马上还要用到此处新分配的数据块，所以不急于立刻输出到
@@ -291,18 +291,6 @@ int Inode::Bmap(int lbn)
 			this->i_addr[lbn] = phyBlkno;
 			this->i_flag |= Inode::IUPD;
 		}
-		/* 找到预读块对应的物理盘块号 */
-		Inode::rablock = 0;
-		if(lbn <= 4)
-		{
-			/* 
-			 * i_addr[0] - i_addr[5]为直接索引表。如果预读块对应物理块号可以从
-			 * 直接索引表中获得，则记录在Inode::rablock中。如果需要额外的I/O开销
-			 * 读入间接索引块，就显得不太值得了。漂亮！
-			 */
-			Inode::rablock = this->i_addr[lbn + 1];
-		}
-
 		return phyBlkno;
 	}
 	else	/* lbn >= 6 大型、巨型文件 */
@@ -310,13 +298,9 @@ int Inode::Bmap(int lbn)
 		/* 计算逻辑块号lbn对应i_addr[]中的索引 */
 
 		if(lbn < Inode::LARGE_FILE_BLOCK)	/* 大型文件: 长度介于7 - (128 * 2 + 6)个盘块之间 */
-		{
 			index = (lbn - Inode::SMALL_FILE_BLOCK) / Inode::ADDRESS_PER_INDEX_BLOCK + 6;
-		}
 		else	/* 巨型文件: 长度介于263 - (128 * 128 * 2 + 128 * 2 + 6)个盘块之间 */
-		{
 			index = (lbn - Inode::LARGE_FILE_BLOCK) / (Inode::ADDRESS_PER_INDEX_BLOCK * Inode::ADDRESS_PER_INDEX_BLOCK) + 8;
-		}
 
 		phyBlkno = this->i_addr[index];
 		/* 若该项为零，则表示不存在相应的间接索引表块 */
@@ -324,8 +308,7 @@ int Inode::Bmap(int lbn)
 		{
 			this->i_flag |= Inode::IUPD;
 			/* 分配一空闲盘块存放间接索引表 */
-			if( (pFirstBuf = fileSys.Alloc(this->i_dev)) == NULL )
-			{
+			if( (pFirstBuf = fileSys.Alloc()) == NULL ) {
 				return 0;	/* 分配失败 */
 			}
 			/* i_addr[index]中记录间接索引表的物理盘块号 */
@@ -334,7 +317,7 @@ int Inode::Bmap(int lbn)
 		else
 		{
 			/* 读出存储间接索引表的字符块 */
-			pFirstBuf = bufMgr.Bread(this->i_dev, phyBlkno);
+			pFirstBuf = bufMgr.Bread(phyBlkno);
 		}
 		/* 获取缓冲区首址 */
 		iTable = (int *)pFirstBuf->b_addr;
@@ -351,7 +334,7 @@ int Inode::Bmap(int lbn)
 			phyBlkno = iTable[index];
 			if( 0 == phyBlkno )
 			{
-				if( (pSecondBuf = fileSys.Alloc(this->i_dev)) == NULL)
+				if( (pSecondBuf = fileSys.Alloc()) == NULL)
 				{
 					/* 分配一次间接索引表磁盘块失败，释放缓存中的二次间接索引表，然后返回 */
 					bufMgr.Brelse(pFirstBuf);
@@ -366,7 +349,7 @@ int Inode::Bmap(int lbn)
 			{
 				/* 释放二次间接索引表占用的缓存，并读入一次间接索引表 */
 				bufMgr.Brelse(pFirstBuf);
-				pSecondBuf = bufMgr.Bread(this->i_dev, phyBlkno);
+				pSecondBuf = bufMgr.Bread(phyBlkno);
 			}
 
 			pFirstBuf = pSecondBuf;
@@ -377,16 +360,11 @@ int Inode::Bmap(int lbn)
 		/* 计算逻辑块号lbn最终位于一次间接索引表中的表项序号index */
 
 		if( lbn < Inode::LARGE_FILE_BLOCK )
-		{
 			index = (lbn - Inode::SMALL_FILE_BLOCK) % Inode::ADDRESS_PER_INDEX_BLOCK;
-		}
 		else
-		{
 			index = (lbn - Inode::LARGE_FILE_BLOCK) % Inode::ADDRESS_PER_INDEX_BLOCK;
-		}
 
-		if( (phyBlkno = iTable[index]) == 0 && (pSecondBuf = fileSys.Alloc(this->i_dev)) != NULL)
-		{
+		if( (phyBlkno = iTable[index]) == 0 && (pSecondBuf = fileSys.Alloc()) != NULL) {
 			/* 将分配到的文件数据盘块号登记在一次间接索引表中 */
 			phyBlkno = pSecondBuf->b_blkno;
 			iTable[index] = phyBlkno;
@@ -394,16 +372,9 @@ int Inode::Bmap(int lbn)
 			bufMgr.Bdwrite(pSecondBuf);
 			bufMgr.Bdwrite(pFirstBuf);
 		}
-		else
-		{
+		else {
 			/* 释放一次间接索引表占用缓存 */
 			bufMgr.Brelse(pFirstBuf);
-		}
-		/* 找到预读块对应的物理盘块号，如果获取预读块号需要额外的一次for间接索引块的IO，不合算，放弃 */
-		Inode::rablock = 0;
-		if( index + 1 < Inode::ADDRESS_PER_INDEX_BLOCK)
-		{
-			Inode::rablock = iTable[index + 1];
 		}
 		return phyBlkno;
 	}

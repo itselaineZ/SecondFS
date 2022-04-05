@@ -369,44 +369,22 @@ void FileSystem::IFree(short dev, int number)
 	sb->s_fmod = 1;
 }
 
-Buf* FileSystem::Alloc(short dev)
-{
+Buf* FileSystem::Alloc() {
 	int blkno;	/* 分配到的空闲磁盘块编号 */
-	SuperBlock* sb;
 	Buf* pBuf;
 	User& u = Kernel::Instance().GetUser();
 
-	/* 获取SuperBlock对象的内存副本 */
-	sb = this->GetFS(dev);
-
-	/* 
-	 * 如果空闲磁盘块索引表正在被上锁，表明有其它进程
-	 * 正在操作空闲磁盘块索引表，因而对其上锁。这通常
-	 * 是由于其余进程调用Free()或Alloc()造成的。
-	 */
-	while(sb->s_flock)
-	{
-		/* 进入睡眠直到获得该锁才继续 */
-		u.u_procp->Sleep((unsigned long)&sb->s_flock, ProcessManager::PINOD);
-	}
-
 	/* 从索引表“栈顶”获取空闲磁盘块编号 */
-	blkno = sb->s_free[--sb->s_nfree];
+	blkno = superBlock->s_free[--superBlock->s_nfree];
 
 	/* 
 	 * 若获取磁盘块编号为零，则表示已分配尽所有的空闲磁盘块。
 	 * 或者分配到的空闲磁盘块编号不属于数据盘块区域中(由BadBlock()检查)，
 	 * 都意味着分配空闲磁盘块操作失败。
 	 */
-	if(0 == blkno )
-	{
-		sb->s_nfree = 0;
-		Diagnose::Write("No Space On %d !\n", dev);
-		u.u_error = User::ENOSPC;
-		return NULL;
-	}
-	if( this->BadBlock(sb, dev, blkno) )
-	{
+	if(blkno <= 0) {
+		superBlock->s_nfree = 0;
+		u.u_error = User::U_ENOSPC;
 		return NULL;
 	}
 
@@ -414,38 +392,29 @@ Buf* FileSystem::Alloc(short dev)
 	 * 栈已空，新分配到空闲磁盘块中记录了下一组空闲磁盘块的编号,
 	 * 将下一组空闲磁盘块的编号读入SuperBlock的空闲磁盘块索引表s_free[100]中。
 	 */
-	if(sb->s_nfree <= 0)
-	{
-		/* 
-		 * 此处加锁，因为以下要进行读盘操作，有可能发生进程切换，
-		 * 新上台的进程可能对SuperBlock的空闲盘块索引表访问，会导致不一致性。
-		 */
-		sb->s_flock++;
+	if(superBlock->s_nfree <= 0) {
 
 		/* 读入该空闲磁盘块 */
-		pBuf = this->m_BufferManager->Bread(dev, blkno);
+		pBuf = this->m_BufferManager->Bread(blkno);
 
 		/* 从该磁盘块的0字节开始记录，共占据4(s_nfree)+400(s_free[100])个字节 */
 		int* p = (int *)pBuf->b_addr;
 
 		/* 首先读出空闲盘块数s_nfree */
-		sb->s_nfree = *p++;
+		superBlock->s_nfree = *p++;
 
 		/* 读取缓存中后续位置的数据，写入到SuperBlock空闲盘块索引表s_free[100]中 */
-		Utility::DWordCopy(p, sb->s_free, 100);
+		Utility::MemCopy(superBlock->s_free, p, sizeof(superBlock->s_free));
 
 		/* 缓存使用完毕，释放以便被其它进程使用 */
 		this->m_BufferManager->Brelse(pBuf);
-
-		/* 解除对空闲磁盘块索引表的锁，唤醒因为等待锁而睡眠的进程 */
-		sb->s_flock = 0;
-		Kernel::Instance().GetProcessManager().WakeUpAll((unsigned long)&sb->s_flock);
 	}
 
 	/* 普通情况下成功分配到一空闲磁盘块 */
-	pBuf = this->m_BufferManager->GetBlk(dev, blkno);	/* 为该磁盘块申请缓存 */
-	this->m_BufferManager->ClrBuf(pBuf);	/* 清空缓存中的数据 */
-	sb->s_fmod = 1;	/* 设置SuperBlock被修改标志 */
+	pBuf = this->m_BufferManager->GetBlk(blkno);	/* 为该磁盘块申请缓存 */
+	if (pBuf)
+		this->m_BufferManager->ClrBuf(pBuf);	/* 清空缓存中的数据 */
+	superBlock->s_fmod = 1;	/* 设置SuperBlock被修改标志 */
 
 	return pBuf;
 }

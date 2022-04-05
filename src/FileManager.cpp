@@ -844,11 +844,23 @@ void Ls() {
 		if (u.u_IOParam.m_Offset % Inode::BLOCK_SIZE == 0) {
 			if (pBuf) 
 				bufferManager.Brelse(pBuf);	//  释放
+			//  计算逻辑块号
 			int phyBlkno = pInode->Bmap(u.u_IOParam.m_Offset / Inode::BLOCK_SIZE);
 			pBuf = bufferManager.Bread(phyBlkno);
-			
 		}
+		//  将当前Inode节点的文件项，拷贝到u_udent（当前目录的目录项)结构中存储
+		Utility::MemCopy(&u.u_dent, pBuf->b_addr+(u.u_IOParam.m_Offset % Inode::BLOCK_SIZE), sizeof(u.u_dent));
+		//  IO位置后移
+		u.u_IOParam.m_Offset += sizeof(DirectoryEntry);
+		u.u_IOParam.m_Count--;
+		//  
+		if (! u.u_dent.m_ino)	//  无目录项
+			continue;
+		u.u_ls += u.u_dent.m_name;
+		u.u_ls += '\n';
 	}
+	if (pBuf)
+		bufferManager.Brelse(pBuf);
 }
 /*==========================class DirectoryEntry===============================*/
 DirectoryEntry::DirectoryEntry()
