@@ -1,13 +1,14 @@
 #include <iostream>
 #include <cstdio>
-#include <cstring>
+#include <string>
+#include <sstream>
 #include <vector>
-#include "File.h"
-#include "FileManager.h"
-#include "FileSystem.h"
-#include "OpenFileManager.h"
-#include "User.h"
-#include "Kernel.h"
+#include "../include/File.h"
+#include "../include/FileManager.h"
+#include "../include/FileSystem.h"
+#include "../include/OpenFileManager.h"
+#include "../include/User.h"
+#include "../include/Kernel.h"
 using namespace std;
 
 extern OpenFileTable g_OpenFileTable;
@@ -53,7 +54,16 @@ int main() {
     cout << "Welcome to Elaine's Second File System! Input \"help\" to get the usage.\n";
     while(1) {
         cout << "[root@SecondFS " << user->u_curdir << " ]#";
-        getline(cin, arg);
+        string line,cmd;
+        getline(cin,line);
+        stringstream ssin(line);
+        ssin>>cmd;
+        arg.push_back(cmd);
+        int n=1;
+        while (ssin >> arg[n]){ 
+            n++;
+        }
+
         if (arg[0] == "")
             continue;
         else if (arg[0] == "help") {

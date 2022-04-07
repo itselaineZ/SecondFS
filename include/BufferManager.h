@@ -23,8 +23,8 @@ public:
 	
 	Buf* GetBlk(int blkno);	/* 申请一块缓存，用于读写设备dev上的字符块blkno。*/
 	void Brelse(Buf* bp);				/* 释放缓存控制块buf */
-	void IOWait(Buf* bp);				/* 同步方式I/O，等待I/O操作结束 */
-	void IODone(Buf* bp);				/* I/O操作结束善后处理 */
+	//void IOWait(Buf* bp);				/* 同步方式I/O，等待I/O操作结束 */
+	//void IODone(Buf* bp);				/* I/O操作结束善后处理 */
 
 	Buf* Bread(int blkno);	/* 读一个磁盘块。dev为主、次设备号，blkno为目标磁盘块逻辑块号。 */
 
@@ -34,13 +34,13 @@ public:
 	void ClrBuf(Buf* bp);				/* 清空缓冲区内容 */
 	void Bflush();				/* 将dev指定设备队列中延迟写的缓存全部输出到磁盘 */
 	
-    Buf& GetBFreeList();				/* 获取自由缓存队列控制块Buf对象引用 */
+    //Buf& GetBFreeList();				/* 获取自由缓存队列控制块Buf对象引用 */
 	void DetachNode(Buf *bp);	//  LRU Cache算法，每次从头部取出，使用后放到尾部
 
 private:
-	void GetError(Buf* bp);				/* 获取I/O操作中发生的错误信息 */ //#
+	//void GetError(Buf* bp);				/* 获取I/O操作中发生的错误信息 */ //#
 	void NotAvail(Buf* bp);				/* 从自由队列中摘下指定的缓存控制块buf */ //#
-	Buf* InCore(int blkno);	/* 检查指定字符块是否已在缓存中 */ //#
+	//Buf* InCore(int blkno);	/* 检查指定字符块是否已在缓存中 */ //#
 	
 private:
 	Buf* bFreeList;						/* 自由缓存队列控制块 */

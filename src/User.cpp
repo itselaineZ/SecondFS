@@ -1,5 +1,7 @@
 #include "Utility.h"
 #include "User.h"
+#include <string>
+#include <fstream>
 using namespace std;    //  for string
 
 extern FileManager g_FileManager;
@@ -56,7 +58,7 @@ void User::Create(string fileName, string mode) {
         return;
     }
 
-    arg[1] = md;
+    u_arg[1] = md;
     fileManager->Creat();
     IsError();
 }
@@ -79,11 +81,11 @@ void User::Open(string fileName, string mode) {
         return;
     }
 
-    arg[1] = md;
+    u_arg[1] = md;
     fileManager->Open();
     if (IsError())
         return;
-    cout << "open success, return fd=" << ar0[EAX] << endl;
+    cout << "open success, return fd=" << u_ar0[EAX] << endl;
 }
 
 void User::Close(string sfd) {
@@ -91,7 +93,7 @@ void User::Close(string sfd) {
         cout << "parameter fd can't be empty or be nonnumeric ! \n";
         return;
     }
-    arg[0] = stoi(sfd);;
+    u_arg[0] = stoi(sfd);
     fileManager->Close();
     IsError();
 }
@@ -109,9 +111,9 @@ void User::Seek(string sfd, string offset, string origin) {
         cout << "parameter origin can't be empty or be nonnumeric ! \n";
         return;
     }
-    arg[0] = stoi(sfd);
-    arg[1] = stoi(offset);
-    arg[2] = stoi(origin);
+    u_arg[0] = stoi(sfd);
+    u_arg[1] = stoi(offset);
+    u_arg[2] = stoi(origin);
     fileManager->Seek();
     IsError();
 }
@@ -138,14 +140,14 @@ void User::Write(string sfd, string inFile, string size) {
     fin.read(buffer, usize);
     fin.close();
     //cout << "fd = " << fd << " inFile = " << inFile << " size = " << usize << "\n";
-    arg[0] = fd;
-    arg[1] = (long)buffer;
-    arg[2] = usize;
+    u_arg[0] = fd;
+    u_arg[1] = (long)buffer;
+    u_arg[2] = usize;
     fileManager->Write();
 
     if (IsError())
         return;
-    cout << "write " << ar0[User::EAX] << "bytes success !" << endl;
+    cout << "write " << u_ar0[User::EAX] << "bytes success !" << endl;
     delete[]buffer;
 }
 
@@ -163,16 +165,16 @@ void User::Read(string sfd, string outFile, string size) {
     }
     char *buffer = new char[usize];
     //cout << "fd = " << fd << " outFile = " << outFile << " size = " << size << "\n";
-    arg[0] = fd;
-    arg[1] = (long)buffer;
-    arg[2] = usize;
+    u_arg[0] = fd;
+    u_arg[1] = (long)buffer;
+    u_arg[2] = usize;
     fileManager->Read();
     if (IsError())
         return;
 
-    cout << "read " << ar0[User::EAX] << " bytes success : \n" ;
+    cout << "read " << u_ar0[User::EAX] << " bytes success : \n" ;
     if (outFile.empty()) {
-        for (unsigned int i = 0; i < ar0[User::EAX]; ++i) {
+        for (unsigned int i = 0; i < u_ar0[User::EAX]; ++i) {
             cout << (char)buffer[i];
         }
         cout << " \n";
@@ -183,7 +185,7 @@ void User::Read(string sfd, string outFile, string size) {
         cout << "file " << outFile << " open failed ! \n";
         return;
     }
-    fout.write(buffer, ar0[User::EAX]);
+    fout.write(buffer, u_ar0[User::EAX]);
     fout.close();
     cout << "read to " << outFile << " done ! \n";
     delete[]buffer;
@@ -192,13 +194,13 @@ void User::Read(string sfd, string outFile, string size) {
 int User::INodeMode(string mode) {
     int md = 0;
     if (mode.find("-r") != string::npos) {
-        md |= INode::IREAD;
+        md |= Inode::IREAD;
     }
     if (mode.find("-w") != string::npos) {
-        md |= INode::IWRITE;
+        md |= Inode::IWRITE;
     }
     if (mode.find("-rw") != string::npos) {
-        md |= (INode::IREAD | INode::IWRITE);
+        md |= (Inode::IREAD | Inode::IWRITE);
     }
     return md;
 }

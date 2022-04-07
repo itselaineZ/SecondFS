@@ -13,7 +13,7 @@
 class User
 {
 public:
-	//static const int EAX = 0;	/* u.u_ar0[EAX]；访问现场保护区中EAX寄存器的偏移量 */
+	static const int EAX = 0;	/* u.u_ar0[EAX]；访问现场保护区中EAX寄存器的偏移量 */
 	
 	/* u_error's Error Code */
 	/* 1~32 来自linux 的内核代码中的/usr/include/asm/errno.h, 其余for V6++ */

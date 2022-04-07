@@ -65,6 +65,13 @@ public:
 	static const int DATA_ZONE_SIZE = 18000 - DATA_ZONE_START_SECTOR;	/* 数据区占据的扇区数量 */
 
 	static const int DISK_SIZE = 16384;		//  磁盘所有扇区数量
+	
+	// Block块大小
+    static const int BLOCK_SIZE = 512;
+
+    // 定义SuperBlock位于磁盘上的扇区号，占据两个扇区
+    static const int SUPERBLOCK_START_SECTOR = 0;
+
 	/* Functions */
 public:
 	/* Constructors */
@@ -121,7 +128,7 @@ private:
 	 * @comment 检查设备dev上编号blkno的磁盘块是否属于
 	 * 数据盘块区
 	 */
-	bool BadBlock(SuperBlock* spb, short dev, int blkno);
+	//bool BadBlock(SuperBlock* spb, short dev, int blkno);
 
 private:
 	BufferManager* m_BufferManager;		/* FileSystem类需要缓存管理模块(BufferManager)提供的接口 */

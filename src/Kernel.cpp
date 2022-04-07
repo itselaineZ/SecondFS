@@ -1,4 +1,4 @@
-#include "Kernel.h"
+#include "../include/Kernel.h"
 
 Kernel Kernel::instance;
 
@@ -32,13 +32,13 @@ void Kernel::InitBuffer()
 	this->m_BufferManager = &g_BufferManager;
 	this->m_DiskDriver = &g_DiskDriver;
 
-	Diagnose::Write("Initialize Buffer...");
+	cout<<"Initialize Buffer...";
 	this->GetBufferManager().Initialize();
-	Diagnose::Write("OK.\n");
+	cout<<"OK.\n";
 
-	Diagnose::Write("Initialize Device Manager...");
-	this->GetDeviceManager().Initialize();
-	Diagnose::Write("OK.\n");
+	cout<<"Initialize Device Manager...";
+	this->GetDiskDriver().Initialize();
+	cout<<"OK.\n";
 }
 
 void Kernel::InitFileSystem()
@@ -46,19 +46,19 @@ void Kernel::InitFileSystem()
 	this->m_FileSystem = &g_FileSystem;
 	this->m_FileManager = &g_FileManager;
 
-	Diagnose::Write("Initialize File System...");
+	cout<<"Initialize File System...";
 	this->GetFileSystem().Initialize();
-	Diagnose::Write("OK.\n");
+	cout<<"OK.\n";
 
-	Diagnose::Write("Initialize File Manager...");
+	cout<<"Initialize File Manager...";
 	this->GetFileManager().Initialize();
-	Diagnose::Write("OK.\n");
+	cout<<"OK.\n";
 }
 
 void Kernel::Initialize()
 {
-	InitMemory();
-	InitProcess();
+	// InitMemory();
+	// InitProcess();
 	InitBuffer();
 	InitFileSystem();
 }
@@ -68,7 +68,7 @@ BufferManager& Kernel::GetBufferManager()
 	return *(this->m_BufferManager);
 }
 
-DeviceManager& Kernel::GetDiskDriver()
+DiskDriver& Kernel::GetDiskDriver()
 {
 	return *(this->m_DiskDriver);
 }

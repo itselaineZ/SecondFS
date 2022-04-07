@@ -61,19 +61,6 @@ public:
 	void Seek();
 
 	/* 
-	 * @comment FStat()获取文件信息
-	 */
-	void FStat();
-
-	/* 
-	 * @comment FStat()获取文件信息
-	 */
-	void Stat();
-
-	/* FStat()和Stat()系统调用的共享例程 */
-	void Stat1(Inode* pInode, unsigned long statBuf);
-
-	/* 
 	 * @comment Read()系统调用处理过程
 	 */
 	void Read();
