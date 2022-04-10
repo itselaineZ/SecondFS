@@ -1,6 +1,6 @@
-#include "BufferManager.h"
-#include "Kernel.h"
-#include "Utility.h"
+#include "../include/BufferManager.h"
+#include "../include/Kernel.h"
+#include "../include/Utility.h"
 extern DiskDriver d_DiskDriver;
 BufferManager::BufferManager()
 {

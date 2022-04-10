@@ -1,6 +1,6 @@
 #include "../include/File.h"
-#include "../include/Utility.h"	//for NULL
 #include "../include/Kernel.h"
+#include "../include/Utility.h"
 
 /*==============================class File===================================*/
 File::File()

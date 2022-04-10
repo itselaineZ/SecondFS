@@ -1,7 +1,6 @@
 #include "../include/Inode.h"
-#include "../include/Utility.h"
-#include "../include/DiskDriver.h"
 #include "../include/Kernel.h"
+#include "../include/Utility.h"
 
 /*==============================class Inode===================================*/
 /*	预读块的块号，对普通文件这是预读块所在的物理块号。对硬盘而言，这是当前物理块（扇区）的下一个物理块（扇区）*/

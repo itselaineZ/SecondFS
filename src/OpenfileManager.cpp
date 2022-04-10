@@ -1,6 +1,6 @@
-#include "OpenFileManager.h"
-#include "Kernel.h"
-#include "Utility.h"
+#include "../include/OpenFileManager.h"
+#include "../include/Kernel.h"
+#include "../include/Utility.h"
 
 /*==============================class OpenFileTable===================================*/
 /* 系统全局打开文件表对象实例的定义 */
@@ -60,30 +60,11 @@ File *OpenFileTable::FAlloc()
 
 void OpenFileTable::CloseF(File *pFile)
 {
-	Inode *pNode;
-	ProcessManager &procMgr = Kernel::Instance().GetProcessManager();
-
-	/* 管道类型 */
-	if (pFile->f_flag & File::FPIPE)
-	{
-		pNode = pFile->f_inode;
-		pNode->i_mode &= ~(Inode::IREAD | Inode::IWRITE);
-		procMgr.WakeUpAll((unsigned long)(pNode + 1));
-		procMgr.WakeUpAll((unsigned long)(pNode + 2));
-	}
-
-	if (pFile->f_count <= 1)
-	{
-		/*
-		 * 如果当前进程是最后一个引用该文件的进程，
-		 * 对特殊块设备、字符设备文件调用相应的关闭函数
-		 */
-		pFile->f_inode->CloseI(pFile->f_flag & File::FWRITE);
-		g_InodeTable.IPut(pFile->f_inode);
-	}
-
 	/* 引用当前File的进程数减1 */
 	pFile->f_count--;
+	if (pFile->f_count <= 0) {
+		g_INodeTable.IPut(pFile->f_inode);
+	}
 }
 
 /*==============================class InodeTable===================================*/
@@ -201,14 +182,9 @@ void InodeTable::UpdateInodeTable()
 		 * 如果Inode对象没有被上锁，即当前未被其它进程使用，可以同步到外存Inode；
 		 * 并且count不等于0，count == 0意味着该内存Inode未被任何打开文件引用，无需同步。
 		 */
-		if ((this->m_Inode[i].i_flag & Inode::ILOCK) == 0 && this->m_Inode[i].i_count != 0)
+		if (this->m_Inode[i].i_count != 0)
 		{
-			/* 将内存Inode上锁后同步到外存Inode */
-			this->m_Inode[i].i_flag |= Inode::ILOCK;
-			this->m_Inode[i].IUpdate(Time::time);
-
-			/* 对内存Inode解锁 */
-			this->m_Inode[i].Prele();
+			this->m_Inode[i].IUpdate((int)Utility::time(NULL));
 		}
 	}
 }

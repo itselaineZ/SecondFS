@@ -1,6 +1,5 @@
-#include "Utility.h"
-#include "User.h"
-#include <string>
+#include "../include/User.h"
+#include <string.h>
 #include <fstream>
 using namespace std;    //  for string
 
@@ -141,7 +140,7 @@ void User::Write(string sfd, string inFile, string size) {
     fin.close();
     //cout << "fd = " << fd << " inFile = " << inFile << " size = " << usize << "\n";
     u_arg[0] = fd;
-    u_arg[1] = (long)buffer;
+    u_arg[1] = (long long)buffer;
     u_arg[2] = usize;
     fileManager->Write();
 
@@ -166,7 +165,7 @@ void User::Read(string sfd, string outFile, string size) {
     char *buffer = new char[usize];
     //cout << "fd = " << fd << " outFile = " << outFile << " size = " << size << "\n";
     u_arg[0] = fd;
-    u_arg[1] = (long)buffer;
+    u_arg[1] = (long long)(buffer);
     u_arg[2] = usize;
     fileManager->Read();
     if (IsError())

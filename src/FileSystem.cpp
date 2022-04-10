@@ -1,7 +1,8 @@
-#include "FileSystem.h"
-#include "Utility.h"
-#include "Kernel.h"
-#include "OpenFileManager.h"
+#include "../include/FileSystem.h"
+#include "../include/Kernel.h"
+#include "../include/Utility.h"
+#include <string.h>
+//#include "OpenFileManager.cpp"
 SuperBlock g_spb;
 extern DiskDriver g_DiskDriver;
 extern BufferManager g_BufferManager;

@@ -1,6 +1,6 @@
-#include "Utility.h"
-#include "Kernel.h"
-#include "User.h"
+#pragma
+#include "../include/Utility.h"
+#include "../include/User.h"
 
 void Utility::MemCopy(void *des, const void* src, unsigned int count)
 {

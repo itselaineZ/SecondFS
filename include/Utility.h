@@ -8,7 +8,6 @@
  * 由于使用了编译选项-fno-builtin，
  * 编译器不提供这些常量的定义。
  */
-#define NULL	0
 
 class Utility
 {

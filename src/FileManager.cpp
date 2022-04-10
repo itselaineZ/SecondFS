@@ -1,5 +1,6 @@
 #include "../include/FileManager.h"
 #include "../include/Kernel.h"
+#include "../include/Inode.h"
 #include "../include/Utility.h"
 
 extern BufferManager g_BufferManager;

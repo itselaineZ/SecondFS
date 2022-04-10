@@ -3,12 +3,14 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "../include/File.h"
-#include "../include/FileManager.h"
-#include "../include/FileSystem.h"
-#include "../include/OpenFileManager.h"
-#include "../include/User.h"
-#include "../include/Kernel.h"
+#include "File.cpp"
+#include "FileManager.cpp"
+#include "BufferManager.cpp"
+#include "FileSystem.cpp"
+#include "OpenFileManager.cpp"
+#include "User.cpp"
+#include "Kernel.cpp"
+#include "Utility.cpp"
 using namespace std;
 
 extern OpenFileTable g_OpenFileTable;
