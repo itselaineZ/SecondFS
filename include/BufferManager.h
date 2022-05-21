@@ -1,10 +1,10 @@
 #ifndef BUFFER_MANAGER_H
 #define BUFFER_MANAGER_H
 
-#include <unordered_map>
+#include <map>
 #include "Buf.h"
 #include "DiskDriver.h"
-using namespace std;
+//using namespace std;
 
 class BufferManager
 {
@@ -47,7 +47,7 @@ private:
 	Buf SwBuf;							/* 进程图像传送请求块 */
 	Buf m_Buf[NBUF];					/* 缓存控制块数组 */
 	unsigned char Buffer[NBUF][BUFFER_SIZE];	/* 缓冲区数组 */
-	unordered_map<int, Buf*> mp;
+	map<int, Buf*> mp;
 	DiskDriver* m_DiskDriver;		/* 指向设备管理模块全局对象 */
 };
 

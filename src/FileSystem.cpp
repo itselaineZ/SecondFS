@@ -4,9 +4,10 @@
 #include <string.h>
 //#include "OpenFileManager.cpp"
 SuperBlock g_spb;
-extern DiskDriver g_DiskDriver;
+extern DiskDriver d_DiskDriver;
 extern BufferManager g_BufferManager;
-extern InodeTable g_INodeTable;
+extern InodeTable g_InodeTable;
+extern User g_User;
 /*==============================class SuperBlock===================================*/
 
 SuperBlock::SuperBlock()
@@ -35,7 +36,7 @@ void SuperBlock::Format()
 /*==============================class FileSystem===================================*/
 FileSystem::FileSystem()
 {
-	diskDriver = &g_DiskDriver;
+	diskDriver = &d_DiskDriver;
 	superBlock = &g_spb;
 	bufferManager = &g_BufferManager;
 	if (!diskDriver->Exists())
@@ -123,7 +124,7 @@ void FileSystem::Update()
 		Utility::MemCopy(pBuf->b_addr, p, BLOCK_SIZE);
 		this->bufferManager->Bwrite(pBuf);
 	}
-	g_INodeTable.UpdateInodeTable();
+	g_InodeTable.UpdateInodeTable();
 	this->bufferManager->Bflush();
 }
 
@@ -132,7 +133,7 @@ Inode *FileSystem::IAlloc()
 	SuperBlock *sb;
 	Buf *pBuf;
 	Inode *pNode;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 	int ino; /* 分配到的空闲外存Inode编号 */
 
 	/*
@@ -225,41 +226,20 @@ Inode *FileSystem::IAlloc()
 	return pNode; /* GCC likes it! */
 }
 
-// void FileSystem::IFree(short dev, int number)
-// {
-// 	SuperBlock *sb;
-
-// 	sb = this->GetFS(dev); /* 获取相应设备的SuperBlock内存副本 */
-
-// 	/*
-// 	 * 如果超级块直接管理的空闲Inode表上锁，
-// 	 * 则释放的外存Inode散落在磁盘Inode区中。
-// 	 */
-// 	if (sb->s_ilock)
-// 	{
-// 		return;
-// 	}
-
-// 	/*
-// 	 * 如果超级块直接管理的空闲外存Inode超过100个，
-// 	 * 同样让释放的外存Inode散落在磁盘Inode区中。
-// 	 */
-// 	if (sb->s_ninode >= 100)
-// 	{
-// 		return;
-// 	}
-
-// 	sb->s_inode[sb->s_ninode++] = number;
-
-// 	/* 设置SuperBlock被修改标志 */
-// 	sb->s_fmod = 1;
-// }
+/* 释放编号为number的外存INode，一般用于删除文件。*/
+void FileSystem::IFree(int number) {
+	if (superBlock->s_ninode >= SuperBlock::MAX_NINODE) {
+		return ;
+	}
+	superBlock->s_inode[superBlock->s_ninode++] = number;
+	superBlock->s_fmod = 1;
+}
 
 Buf *FileSystem::Alloc()
 {
 	int blkno; /* 分配到的空闲磁盘块编号 */
 	Buf *pBuf;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 
 	/* 从索引表“栈顶”获取空闲磁盘块编号 */
 	blkno = superBlock->s_free[--superBlock->s_nfree];
@@ -308,69 +288,20 @@ Buf *FileSystem::Alloc()
 	return pBuf;
 }
 
-// void FileSystem::Free(short dev, int blkno)
-// {
-// 	SuperBlock *sb;
-// 	Buf *pBuf;
-// 	User &u = Kernel::Instance().GetUser();
+/* 释放存储设备dev上编号为blkno的磁盘块 */
+void FileSystem::Free(int blkno) {
+	Buf* pBuffer;
+	User& u = g_User;
 
-// 	sb = this->GetFS(dev);
+	if (superBlock->s_nfree >=SuperBlock::MAX_NFREE ) {
+		pBuffer = this->bufferManager->GetBlk(blkno);
+		int *p = (int*)pBuffer->b_addr;
+		*p++ = superBlock->s_nfree;
+		Utility::MemCopy(p, superBlock->s_free, sizeof(int)*SuperBlock::MAX_NFREE);
+		superBlock->s_nfree = 0;
+		this->bufferManager->Bwrite(pBuffer);
+	}
 
-// 	/*
-// 	 * 尽早设置SuperBlock被修改标志，以防止在释放
-// 	 * 磁盘块Free()执行过程中，对SuperBlock内存副本
-// 	 * 的修改仅进行了一半，就更新到磁盘SuperBlock去
-// 	 */
-// 	sb->s_fmod = 1;
-
-// 	/* 如果空闲磁盘块索引表被上锁，则睡眠等待解锁 */
-// 	while (sb->s_flock)
-// 	{
-// 		u.u_procp->Sleep((unsigned long)&sb->s_flock, ProcessManager::PINOD);
-// 	}
-
-// 	/* 检查释放磁盘块的合法性 */
-// 	if (this->BadBlock(sb, dev, blkno))
-// 	{
-// 		return;
-// 	}
-
-// 	/*
-// 	 * 如果先前系统中已经没有空闲盘块，
-// 	 * 现在释放的是系统中第1块空闲盘块
-// 	 */
-// 	if (sb->s_nfree <= 0)
-// 	{
-// 		sb->s_nfree = 1;
-// 		sb->s_free[0] = 0; /* 使用0标记空闲盘块链结束标志 */
-// 	}
-
-// 	/* SuperBlock中直接管理空闲磁盘块号的栈已满 */
-// 	if (sb->s_nfree >= 100)
-// 	{
-// 		sb->s_flock++;
-
-// 		/*
-// 		 * 使用当前Free()函数正要释放的磁盘块，存放前一组100个空闲
-// 		 * 磁盘块的索引表
-// 		 */
-// 		pBuf = this->m_BufferManager->GetBlk(dev, blkno); /* 为当前正要释放的磁盘块分配缓存 */
-
-// 		/* 从该磁盘块的0字节开始记录，共占据4(s_nfree)+400(s_free[100])个字节 */
-// 		int *p = (int *)pBuf->b_addr;
-
-// 		/* 首先写入空闲盘块数，除了第一组为99块，后续每组都是100块 */
-// 		*p++ = sb->s_nfree;
-// 		/* 将SuperBlock的空闲盘块索引表s_free[100]写入缓存中后续位置 */
-// 		Utility::DWordCopy(sb->s_free, p, 100);
-
-// 		sb->s_nfree = 0;
-// 		/* 将存放空闲盘块索引表的“当前释放盘块”写入磁盘，即实现了空闲盘块记录空闲盘块号的目标 */
-// 		this->m_BufferManager->Bwrite(pBuf);
-
-// 		sb->s_flock = 0;
-// 		Kernel::Instance().GetProcessManager().WakeUpAll((unsigned long)&sb->s_flock);
-// 	}
-// 	sb->s_free[sb->s_nfree++] = blkno; /* SuperBlock中记录下当前释放盘块号 */
-// 	sb->s_fmod = 1;
-// }
+	superBlock->s_free[superBlock->s_nfree++] = blkno;
+	superBlock->s_fmod = 1;
+}

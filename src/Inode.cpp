@@ -2,6 +2,7 @@
 #include "../include/Kernel.h"
 #include "../include/Utility.h"
 
+extern User g_User;
 /*==============================class Inode===================================*/
 /*	预读块的块号，对普通文件这是预读块所在的物理块号。对硬盘而言，这是当前物理块（扇区）的下一个物理块（扇区）*/
 int Inode::rablock = 0;
@@ -48,7 +49,7 @@ void Inode::ReadI()
 	int nbytes; /* 传送至用户目标区字节数量 */
 	short dev;
 	Buf *pBuf;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
 
 	if (0 == u.u_IOParam.m_Count)
@@ -114,7 +115,7 @@ void Inode::WriteI()
 	int nbytes; /* 传送字节数量 */
 	short dev;
 	Buf *pBuf;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
 
 	/* 设置Inode被访问标志位 */
@@ -191,7 +192,7 @@ int Inode::Bmap(int lbn)
 	int phyBlkno; /* 转换后的物理盘块号 */
 	int *iTable;  /* 用于访问索引盘块中一次间接、两次间接索引表 */
 	int index;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
 	FileSystem &fileSys = Kernel::Instance().GetFileSystem();
 

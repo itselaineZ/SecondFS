@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "Inode.cpp"
 #include "File.cpp"
 #include "FileManager.cpp"
 #include "BufferManager.cpp"
@@ -11,14 +12,21 @@
 #include "User.cpp"
 #include "Kernel.cpp"
 #include "Utility.cpp"
+#include "DiskDriver.cpp"
 using namespace std;
 
-extern OpenFileTable g_OpenFileTable;
-extern InodeTable g_INodeTable;
-extern BufferManager g_BufferManager;
-extern FileSystem g_FileSystem;
+ extern OpenFileTable g_OpenFileTable;
+// extern InodeTable g_InodeTable;
+ extern BufferManager g_BufferManager;
+ extern FileSystem g_FileSystem;
 
+
+extern DiskDriver d_DiskDriver;
+
+SuperBlock g_SuperBlock;
+extern InodeTable g_InodeTable;
 User g_User;
+extern FileManager g_FileManager;
 
 void Help() {
     static string man = 
@@ -41,8 +49,9 @@ void Help() {
 
 void InitSystem() {
     cout << "Initializing System....\n";
-    FileManager *fileManager = &Kernel::Instance().GetFileManager();
+    FileManager *fileManager = &g_FileManager;
     fileManager->rootDirInode = g_InodeTable.IGet(FileSystem::ROOTINO);
+    cout<<"aaaa\n";
 }
 
 int main() {
@@ -73,7 +82,7 @@ int main() {
         }
         else if (arg[0] == "Fformat") {
             g_OpenFileTable.Format();
-            g_INodeTable.Format();
+            g_InodeTable.Format();
             g_BufferManager.FormatBuffer();
             g_FileSystem.FormatFS();
             cout << "Format Successfully, will be shut down automatically.\n";

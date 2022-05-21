@@ -6,7 +6,7 @@ Kernel Kernel::instance;
  * 设备管理、高速缓存管理全局manager
  */
 BufferManager g_BufferManager;
-DiskDriver g_DiskDriver;
+DiskDriver d_DiskDriver;
 
 /*
  * 文件系统相关全局manager
@@ -30,7 +30,7 @@ Kernel& Kernel::Instance()
 void Kernel::InitBuffer()
 {
 	this->m_BufferManager = &g_BufferManager;
-	this->m_DiskDriver = &g_DiskDriver;
+	this->m_DiskDriver = &d_DiskDriver;
 
 	cout<<"Initialize Buffer...";
 	this->GetBufferManager().Initialize();
@@ -83,7 +83,7 @@ FileManager& Kernel::GetFileManager()
 	return *(this->m_FileManager);
 }
 
-User& Kernel::GetUser()
-{
-	return *(User*)USER_ADDRESS;
-}
+// User& Kernel::GetUser()
+// {
+// 	return *(User*)USER_ADDRESS;
+// }

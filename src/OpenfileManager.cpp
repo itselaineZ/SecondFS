@@ -1,7 +1,11 @@
 #include "../include/OpenFileManager.h"
 #include "../include/Kernel.h"
 #include "../include/Utility.h"
+/*==============================class InodeTable===================================*/
+/*  定义内存Inode表的实例 */
+InodeTable g_InodeTable;
 
+extern User g_User;
 /*==============================class OpenFileTable===================================*/
 /* 系统全局打开文件表对象实例的定义 */
 OpenFileTable g_OpenFileTable;
@@ -28,7 +32,7 @@ void OpenFileTable::Format()
 File *OpenFileTable::FAlloc()
 {
 	int fd;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 
 	/* 在进程打开文件描述符表中获取一个空闲项 */
 	fd = u.u_ofiles.AllocFreeSlot();
@@ -63,13 +67,10 @@ void OpenFileTable::CloseF(File *pFile)
 	/* 引用当前File的进程数减1 */
 	pFile->f_count--;
 	if (pFile->f_count <= 0) {
-		g_INodeTable.IPut(pFile->f_inode);
+		g_InodeTable.IPut(pFile->f_inode);
 	}
 }
 
-/*==============================class InodeTable===================================*/
-/*  定义内存Inode表的实例 */
-InodeTable g_InodeTable;
 
 InodeTable::InodeTable()
 {
@@ -98,7 +99,7 @@ void InodeTable::Initialize()
 Inode *InodeTable::IGet(int inumber)
 {
 	Inode *pInode;
-	User &u = Kernel::Instance().GetUser();
+	User &u = g_User;
 	/* 检查编号为inumber的外存Inode是否有内存拷贝 */
 	int index = this->IsLoaded(inumber);
 	if (index >= 0) /* 找到内存拷贝 */
@@ -122,8 +123,10 @@ Inode *InodeTable::IGet(int inumber)
 	pInode->i_count++;
 	BufferManager &bm = Kernel::Instance().GetBufferManager();
 	/* 将该外存Inode读入缓冲区 */
+	
 	Buf *pBuf = bm.Bread(FileSystem::INODE_ZONE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
 	/* 将缓冲区中的外存Inode信息拷贝到新分配的内存Inode中 */
+	cout << "aa\n";
 	pInode->ICopy(pBuf, inumber);
 	/* 释放缓存 */
 	bm.Brelse(pBuf);

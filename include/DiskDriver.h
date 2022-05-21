@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Buf.h"
+using namespace std;
 
 class DiskDriver {
 public:

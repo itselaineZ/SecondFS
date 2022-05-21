@@ -12,7 +12,12 @@
 class Utility
 {
 public:
+
+	static void MemSet(void *s, int ch, size_t n);
+
 	static void MemCopy(void *des, const void* src, unsigned int count);
+
+	int MemCmp(const void *buf1, const void *buf2, unsigned int count);
 
 	static void StringCopy(char* src, char* dst);
 

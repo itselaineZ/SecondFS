@@ -2,6 +2,7 @@
 #include "../include/Kernel.h"
 #include "../include/Utility.h"
 
+extern User g_User;
 /*==============================class File===================================*/
 File::File()
 {
@@ -28,7 +29,7 @@ OpenFiles::~OpenFiles()
 int OpenFiles::AllocFreeSlot()
 {
 	int i;
-	User& u = Kernel::Instance().GetUser();
+	User& u = g_User;
 	
 	for(i = 0; i < OpenFiles::NOFILES; i++)
 	{
@@ -49,7 +50,7 @@ int OpenFiles::AllocFreeSlot()
 File* OpenFiles::GetF(int fd)
 {
 	File* pFile;
-	User& u = Kernel::Instance().GetUser();
+	User& u = g_User;
 	
 	/* 如果打开文件描述符的值超出了范围 */
 	if(fd < 0 || fd >= OpenFiles::NOFILES)

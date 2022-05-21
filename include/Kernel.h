@@ -28,7 +28,7 @@ public:
 	DiskDriver &GetDiskDriver();
 	FileSystem &GetFileSystem();
 	FileManager &GetFileManager();
-	User &GetUser(); /* 获取当前进程的User结构 */
+	// User &GetUser(); /* 获取当前进程的User结构 */
 
 private:
 	void InitDiskDriver();

@@ -1,20 +1,22 @@
 #include "../include/BufferManager.h"
 #include "../include/Kernel.h"
 #include "../include/Utility.h"
+using namespace std;
+
 extern DiskDriver d_DiskDriver;
 BufferManager::BufferManager()
 {
 	// nothing to do here
 	bFreeList = new Buf;
-    Initialize();
-    m_DiskDriver = &d_DiskDriver;
+	Initialize();
+	m_DiskDriver = &d_DiskDriver;
 }
 
 BufferManager::~BufferManager()
 {
 	// nothing to do here
 	Bflush();
-    delete bFreeList;
+	delete bFreeList;
 }
 
 void BufferManager::FormatBuffer()
@@ -55,6 +57,7 @@ void BufferManager::Initialize()
 
 void BufferManager::DetachNode(Buf *bp)
 {
+	cout << "bbb\n";
 	if (bp->b_back)
 	{
 		bp->b_forw->b_back = bp->b_back;
@@ -68,10 +71,14 @@ void BufferManager::DetachNode(Buf *bp)
 Buf *BufferManager::GetBlk(int blkno)
 {
 	Buf *bp;
-	//User &u = Kernel::Instance().GetUser();
-
+	// User &u = g_User;
+	
+	cout<<"blkno="<<blkno<<endl;
+	cout<<mp.size()<<endl;
+	cout << "bbb\n";
 	if (mp.find(blkno) != mp.end())
 	{
+		cout << "aaa\n";
 		bp = mp[blkno];
 		DetachNode(bp);
 		return bp;
@@ -108,7 +115,7 @@ void BufferManager::Brelse(Buf *bp)
 
 // void BufferManager::IOWait(Buf* bp)
 // {
-// 	User& u = Kernel::Instance().GetUser();
+// 	User& u = g_User;
 
 // 	/* 这里涉及到临界区
 // 	 * 因为在执行这段程序的时候，很有可能出现硬盘中断，
@@ -149,7 +156,9 @@ Buf *BufferManager::Bread(int blkno)
 {
 	Buf *bp;
 	/* 根据设备号，字符块号申请缓存 */
+	cout << "mysize: " << &(this->mp) << endl;
 	bp = this->GetBlk(blkno);
+	cout << "aaa\n";
 	/* 如果在设备队列中找到所需缓存，即B_DONE已设置，就不需进行I/O操作 */
 	if (bp->b_flags & (Buf::B_DONE | Buf::B_DELWRI))
 		return bp;
@@ -176,9 +185,9 @@ void BufferManager::Bdwrite(Buf *bp)
 
 void BufferManager::ClrBuf(Buf *bp)
 {
-	int* pInt = (int *)bp->b_addr;
+	int *pInt = (int *)bp->b_addr;
 	/* 将缓冲区中数据清零 */
-	for(unsigned int i = 0; i < BufferManager::BUFFER_SIZE / sizeof(int); i++)
+	for (unsigned int i = 0; i < BufferManager::BUFFER_SIZE / sizeof(int); i++)
 	{
 		pInt[i] = 0;
 	}
@@ -202,7 +211,7 @@ void BufferManager::Bflush()
 
 // void BufferManager::GetError(Buf* bp)
 //  {
-//  	User& u = Kernel::Instance().GetUser();
+//  	User& u = g_User;
 
 // 	if (bp->b_flags & Buf::B_ERROR)
 // 	{

@@ -2,6 +2,10 @@
 #include "../include/Utility.h"
 #include "../include/User.h"
 
+void Utility::MemSet(void *s, int ch, size_t n) {
+	::memset(s, ch, n);
+}
+
 void Utility::MemCopy(void *des, const void* src, unsigned int count)
 {
 	unsigned char* psrc = (unsigned char*)src;
@@ -9,6 +13,10 @@ void Utility::MemCopy(void *des, const void* src, unsigned int count)
 	
 	for ( unsigned int i = 0; i < count; i++ ) 
 		pdes[i] = psrc[i];
+}
+
+int Utility::MemCmp(const void *buf1, const void *buf2, unsigned int count) {
+	return ::memcmp(buf1, buf2, count);
 }
 
 void Utility::StringCopy(char* src, char* dst)

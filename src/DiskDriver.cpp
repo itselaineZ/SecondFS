@@ -38,13 +38,13 @@ void DiskDriver::IO(Buf* bp){
     }
 }*/
 
-void DiskDriver::read(void* buffer, unsigned int size, int offset = -1, unsigned int origin = SEEK_SET) {
+void DiskDriver::read(void* buffer, unsigned int size, int offset, unsigned int origin) {
     if (offset >= 0)
         fseek(fp, offset, origin);
     fread(buffer, size, 1, fp);
 }
 
-void DiskDriver::write(const void* buffer, unsigned int size, int offset = -1, unsigned int origin = SEEK_SET) {
+void DiskDriver::write(const void* buffer, unsigned int size, int offset, unsigned int origin) {
     if (offset >= 0) 
         fseek(fp, offset, origin);
     fwrite(buffer, size, 1, fp);
