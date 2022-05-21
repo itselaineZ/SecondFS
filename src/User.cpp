@@ -30,13 +30,12 @@ void User::Mkdir(string dirName) {
 }
 
 void User::Ls() {
-    string ls;
-    ls.clear();
+    g_User.u_ls.clear();
     fileManager->Ls();
     if (IsError()) {
         return;
     }
-    cout << ls << endl;
+    cout << g_User.u_ls << endl;
 }
 
 void User::Cd(string dirName) {

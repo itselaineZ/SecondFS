@@ -6,6 +6,8 @@
 InodeTable g_InodeTable;
 
 extern User g_User;
+extern FileSystem g_FileSystem;
+extern BufferManager g_BufferManager;
 /*==============================class OpenFileTable===================================*/
 /* 系统全局打开文件表对象实例的定义 */
 OpenFileTable g_OpenFileTable;
@@ -74,7 +76,7 @@ void OpenFileTable::CloseF(File *pFile)
 
 InodeTable::InodeTable()
 {
-	// nothing to do here
+	m_FileSystem = &g_FileSystem;
 }
 
 InodeTable::~InodeTable()
@@ -93,7 +95,7 @@ void InodeTable::Format()
 void InodeTable::Initialize()
 {
 	/* 获取对g_FileSystem的引用 */
-	this->m_FileSystem = &Kernel::Instance().GetFileSystem();
+	this->m_FileSystem = &g_FileSystem;
 }
 
 Inode *InodeTable::IGet(int inumber)
@@ -121,12 +123,11 @@ Inode *InodeTable::IGet(int inumber)
 	pInode->i_number = inumber;
 	// pInode->i_flag = Inode::ILOCK;
 	pInode->i_count++;
-	BufferManager &bm = Kernel::Instance().GetBufferManager();
+	BufferManager &bm = g_BufferManager;
 	/* 将该外存Inode读入缓冲区 */
 	
 	Buf *pBuf = bm.Bread(FileSystem::INODE_ZONE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
 	/* 将缓冲区中的外存Inode信息拷贝到新分配的内存Inode中 */
-	cout << "aa\n";
 	pInode->ICopy(pBuf, inumber);
 	/* 释放缓存 */
 	bm.Brelse(pBuf);

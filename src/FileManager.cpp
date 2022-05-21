@@ -6,11 +6,16 @@
 extern BufferManager g_BufferManager;
 extern User g_User;
 extern InodeTable g_InodeTable;
+extern FileSystem g_FileSystem;
 
 /*==========================class FileManager===============================*/
 FileManager::FileManager()
 {
-	// nothing to do here
+	m_FileSystem = &g_FileSystem;
+    m_OpenFileTable = &g_OpenFileTable;
+    m_InodeTable = &g_InodeTable;
+    rootDirInode = m_InodeTable->IGet(FileSystem::ROOTINO);
+    rootDirInode->i_count += 0xff;
 }
 
 FileManager::~FileManager()
@@ -20,7 +25,7 @@ FileManager::~FileManager()
 
 void FileManager::Initialize()
 {
-	this->m_FileSystem = &Kernel::Instance().GetFileSystem();
+	this->m_FileSystem = &g_FileSystem;
 
 	this->m_InodeTable = &g_InodeTable;
 	this->m_OpenFileTable = &g_OpenFileTable;
@@ -54,7 +59,8 @@ void FileManager::Creat()
 {
 	Inode *pInode;
 	User &u = g_User;
-	unsigned int newACCMode = u.u_arg[1] & (Inode::IRWXU | Inode::IRWXG | Inode::IRWXO);
+	//unsigned int newACCMode = u.u_arg[1] & (Inode::IRWXU | Inode::IRWXG | Inode::IRWXO);
+	unsigned int newACCMode = u.u_arg[1];
 
 	/* 搜索目录的模式为1，表示创建；若父目录不可写，出错返回 */
 	pInode = this->NameI(FileManager::CREATE);
@@ -77,6 +83,7 @@ void FileManager::Creat()
 		 * 所表示的权限内容是一样的。
 		 */
 		this->Open1(pInode, File::FWRITE, 2);
+		//pInode->i_mode |= 
 	}
 	else
 	{

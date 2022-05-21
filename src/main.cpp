@@ -40,8 +40,8 @@ void Help() {
         "open <file> [-r -w]                : 打开文件\n"
         "close <file>                       : 关闭文件\n"
         "seek <file> <offset> <origin>      : 移动读写指针\n"
-        "write <file1> <file2> <size>       : 将file2中内容写入file1，指定写入size字节\n"
-        "read <file1> [-o <file2>] <size>   : 将file1内容输出到file2，默认输出到shell\n"
+        "write <file1> <file2> <size>       : 将file2中内容写入file1,指定写入size字节\n"
+        "read <file1> [-o <file2>] <size>   : 将file1内容输出到file2,默认输出到shell\n"
         "autoTest                           : 使用自动测试\n"
         ;
     cout << man;
@@ -51,7 +51,8 @@ void InitSystem() {
     cout << "Initializing System....\n";
     FileManager *fileManager = &g_FileManager;
     fileManager->rootDirInode = g_InodeTable.IGet(FileSystem::ROOTINO);
-    cout<<"aaaa\n";
+    fileManager->rootDirInode->i_mode |= Inode::IFDIR;
+    g_User = User();
 }
 
 int main() {
@@ -69,9 +70,12 @@ int main() {
         getline(cin,line);
         stringstream ssin(line);
         ssin>>cmd;
+        arg.clear();
         arg.push_back(cmd);
         int n=1;
-        while (ssin >> arg[n]){ 
+        string tmp;
+        while (ssin >> tmp){ 
+            arg.push_back(tmp);
             n++;
         }
 
@@ -105,7 +109,7 @@ int main() {
             user->Cd(arg[1]);
         }
         else if (arg[0] == "create") {
-            user->Create(arg[1], arg[2]+arg[3]);
+            user->Create(arg[1], arg[2]);
         }
         else if (arg[0] == "delete") {
             user->Delete(arg[1]);

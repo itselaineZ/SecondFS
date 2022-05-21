@@ -3,6 +3,8 @@
 #include "../include/Utility.h"
 
 extern User g_User;
+extern BufferManager g_BufferManager;
+extern FileSystem g_FileSystem;
 /*==============================class Inode===================================*/
 /*	预读块的块号，对普通文件这是预读块所在的物理块号。对硬盘而言，这是当前物理块（扇区）的下一个物理块（扇区）*/
 int Inode::rablock = 0;
@@ -50,7 +52,7 @@ void Inode::ReadI()
 	short dev;
 	Buf *pBuf;
 	User &u = g_User;
-	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
+	BufferManager &bufMgr = g_BufferManager;
 
 	if (0 == u.u_IOParam.m_Count)
 	{
@@ -116,7 +118,7 @@ void Inode::WriteI()
 	short dev;
 	Buf *pBuf;
 	User &u = g_User;
-	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
+	BufferManager &bufMgr = g_BufferManager;
 
 	/* 设置Inode被访问标志位 */
 	this->i_flag |= (Inode::IACC | Inode::IUPD);
@@ -193,8 +195,8 @@ int Inode::Bmap(int lbn)
 	int *iTable;  /* 用于访问索引盘块中一次间接、两次间接索引表 */
 	int index;
 	User &u = g_User;
-	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
-	FileSystem &fileSys = Kernel::Instance().GetFileSystem();
+	BufferManager &bufMgr = g_BufferManager;
+	FileSystem &fileSys = g_FileSystem;
 
 	/*
 	 * Unix V6++的文件索引结构：(小型、大型和巨型文件)
@@ -332,8 +334,8 @@ void Inode::IUpdate(int time)
 {
 	Buf *pBuf;
 	DiskInode dInode;
-	FileSystem &filesys = Kernel::Instance().GetFileSystem();
-	BufferManager &bufMgr = Kernel::Instance().GetBufferManager();
+	FileSystem &filesys = g_FileSystem;
+	BufferManager &bufMgr = g_BufferManager;
 
 	/* 当IUPD和IACC标志之一被设置，才需要更新相应DiskInode
 	 * 目录搜索，不会设置所途径的目录文件的IACC和IUPD标志 */
@@ -377,9 +379,9 @@ void Inode::IUpdate(int time)
 void Inode::ITrunc()
 {
 	/* 经由磁盘高速缓存读取存放一次间接、两次间接索引表的磁盘块 */
-	BufferManager &bm = Kernel::Instance().GetBufferManager();
+	BufferManager &bm = g_BufferManager;
 	/* 获取g_FileSystem对象的引用，执行释放磁盘块的操作 */
-	FileSystem &filesys = Kernel::Instance().GetFileSystem();
+	FileSystem &filesys = g_FileSystem;
 
 	/* 采用FILO方式释放，以尽量使得SuperBlock中记录的空闲盘块号连续。
 	 *

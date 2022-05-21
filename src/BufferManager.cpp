@@ -57,7 +57,6 @@ void BufferManager::Initialize()
 
 void BufferManager::DetachNode(Buf *bp)
 {
-	cout << "bbb\n";
 	if (bp->b_back)
 	{
 		bp->b_forw->b_back = bp->b_back;
@@ -73,12 +72,8 @@ Buf *BufferManager::GetBlk(int blkno)
 	Buf *bp;
 	// User &u = g_User;
 	
-	cout<<"blkno="<<blkno<<endl;
-	cout<<mp.size()<<endl;
-	cout << "bbb\n";
 	if (mp.find(blkno) != mp.end())
 	{
-		cout << "aaa\n";
 		bp = mp[blkno];
 		DetachNode(bp);
 		return bp;
@@ -156,9 +151,7 @@ Buf *BufferManager::Bread(int blkno)
 {
 	Buf *bp;
 	/* 根据设备号，字符块号申请缓存 */
-	cout << "mysize: " << &(this->mp) << endl;
 	bp = this->GetBlk(blkno);
-	cout << "aaa\n";
 	/* 如果在设备队列中找到所需缓存，即B_DONE已设置，就不需进行I/O操作 */
 	if (bp->b_flags & (Buf::B_DONE | Buf::B_DELWRI))
 		return bp;

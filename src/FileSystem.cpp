@@ -99,8 +99,8 @@ void FileSystem::FormatFS()
 
 void FileSystem::Initialize()
 {
-	this->m_BufferManager = &Kernel::Instance().GetBufferManager();
-	this->updlock = 0;
+	// this->m_BufferManager = &g_BufferManager; 
+	// this->updlock = 0;
 }
 
 void FileSystem::LoadSuperBlock()
@@ -130,7 +130,7 @@ void FileSystem::Update()
 
 Inode *FileSystem::IAlloc()
 {
-	SuperBlock *sb;
+	SuperBlock *sb = superBlock;
 	Buf *pBuf;
 	Inode *pNode;
 	User &u = g_User;
@@ -150,7 +150,7 @@ Inode *FileSystem::IAlloc()
 		/* 依次读入磁盘Inode区中的磁盘块，搜索其中空闲外存Inode，记入空闲Inode索引表 */
 		for (int i = 0; i < sb->s_isize; i++)
 		{
-			pBuf = this->m_BufferManager->Bread(FileSystem::INODE_ZONE_START_SECTOR + i);
+			pBuf = this->bufferManager->Bread(FileSystem::INODE_ZONE_START_SECTOR + i);
 
 			/* 获取缓冲区首址 */
 			int *p = (int *)pBuf->b_addr;
@@ -187,7 +187,7 @@ Inode *FileSystem::IAlloc()
 			}
 
 			/* 至此已读完当前磁盘块，释放相应的缓存 */
-			this->m_BufferManager->Brelse(pBuf);
+			this->bufferManager->Brelse(pBuf);
 
 			/* 如果空闲索引表已经装满，则不继续搜索 */
 			if (sb->s_ninode >= 100)
@@ -264,7 +264,7 @@ Buf *FileSystem::Alloc()
 	{
 
 		/* 读入该空闲磁盘块 */
-		pBuf = this->m_BufferManager->Bread(blkno);
+		pBuf = this->bufferManager->Bread(blkno);
 
 		/* 从该磁盘块的0字节开始记录，共占据4(s_nfree)+400(s_free[100])个字节 */
 		int *p = (int *)pBuf->b_addr;
@@ -276,13 +276,13 @@ Buf *FileSystem::Alloc()
 		Utility::MemCopy(superBlock->s_free, p, sizeof(superBlock->s_free));
 
 		/* 缓存使用完毕，释放以便被其它进程使用 */
-		this->m_BufferManager->Brelse(pBuf);
+		this->bufferManager->Brelse(pBuf);
 	}
 
 	/* 普通情况下成功分配到一空闲磁盘块 */
-	pBuf = this->m_BufferManager->GetBlk(blkno); /* 为该磁盘块申请缓存 */
+	pBuf = this->bufferManager->GetBlk(blkno); /* 为该磁盘块申请缓存 */
 	if (pBuf)
-		this->m_BufferManager->ClrBuf(pBuf); /* 清空缓存中的数据 */
+		this->bufferManager->ClrBuf(pBuf); /* 清空缓存中的数据 */
 	superBlock->s_fmod = 1;					 /* 设置SuperBlock被修改标志 */
 
 	return pBuf;
