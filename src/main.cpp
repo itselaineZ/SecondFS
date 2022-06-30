@@ -29,7 +29,7 @@ User g_User;
 extern FileManager g_FileManager;
 
 void Help() {
-    static string man = 
+    string man = 
         "Fformat                            : 格式化文件系统\n"
         "exit                               : 退出文件系统\n"
         "mkdir <dir>                        : 新建目录\n"
@@ -45,6 +45,7 @@ void Help() {
         "autoTest                           : 使用自动测试\n"
         ;
     cout << man;
+    return;
 }
 
 void InitSystem() {
@@ -83,16 +84,19 @@ int main() {
             continue;
         else if (arg[0] == "help") {
             Help();
+            cout<<"help done"<<endl;
         }
         else if (arg[0] == "Fformat") {
             g_OpenFileTable.Format();
             g_InodeTable.Format();
             g_BufferManager.FormatBuffer();
             g_FileSystem.FormatFS();
+            d_DiskDriver.close();
             cout << "Format Successfully, will be shut down automatically.\n";
             exit(0);
         }
         else if (arg[0] == "exit") {
+            d_DiskDriver.close();
             exit(0);
         }
         else if (arg[0] == "autoTest") {

@@ -49,3 +49,6 @@ void DiskDriver::write(const void* buffer, unsigned int size, int offset, unsign
         fseek(fp, offset, origin);
     fwrite(buffer, size, 1, fp);
 }
+void DiskDriver::close(){
+    fclose(fp);
+}

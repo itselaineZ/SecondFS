@@ -15,6 +15,7 @@ FileManager::FileManager()
     m_OpenFileTable = &g_OpenFileTable;
     m_InodeTable = &g_InodeTable;
     rootDirInode = m_InodeTable->IGet(FileSystem::ROOTINO);
+	//rootDirInode->i_count = 0;
     rootDirInode->i_count += 0xff;
 }
 
@@ -449,27 +450,6 @@ void FileManager::WriteDir(Inode *pInode)
 	this->m_InodeTable->IPut(u.u_pdir);
 }
 
-// void FileManager::SetCurDir(char* pathname)
-// {
-// 	User& u = g_User;
-
-// 	/* 路径不是从根目录'/'开始，则在现有u.u_curdir后面加上当前路径分量 */
-// 	if ( pathname[0] != '/' )
-// 	{
-// 		int length = Utility::StringLength(u.u_curdir);
-// 		if ( u.u_curdir[length - 1] != '/' )
-// 		{
-// 			u.u_curdir[length] = '/';
-// 			length++;
-// 		}
-// 		Utility::StringCopy(pathname, u.u_curdir + length);
-// 	}
-// 	else	/* 如果是从根目录'/'开始，则取代原有工作目录 */
-// 	{
-// 		Utility::StringCopy(pathname, u.u_curdir);
-// 	}
-// }
-
 /*
  * 返回值是0，表示拥有打开文件的权限；1表示没有所需的访问权限。文件未能打开的原因记录在u.u_error变量中。
  */
@@ -584,47 +564,6 @@ void FileManager::UnLink()
 	this->m_InodeTable->IPut(pDeleteInode);
 	this->m_InodeTable->IPut(pInode);
 }
-
-// void FileManager::MkNod()
-// {
-// 	Inode *pInode;
-// 	User &u = g_User;
-
-// 	/* 检查uid是否是root，该系统调用只有uid==root时才可被调用 */
-// 	if (u.SUser())
-// 	{
-// 		pInode = this->NameI(FileManager::NextChar, FileManager::CREATE);
-// 		/* 要创建的文件已经存在,这里并不能去覆盖此文件 */
-// 		if (pInode != NULL)
-// 		{
-// 			u.u_error = User::U_EEXIST;
-// 			this->m_InodeTable->IPut(pInode);
-// 			return;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		/* 非root用户执行mknod()系统调用返回User::EPERM */
-// 		u.u_error = User::U_EPERM;
-// 		return;
-// 	}
-// 	/* 没有通过SUser()的检查 */
-// 	if (User::U_NOERROR != u.u_error)
-// 	{
-// 		return; /* 没有需要释放的资源，直接退出 */
-// 	}
-// 	pInode = this->MakNode(u.u_arg[1]);
-// 	if (NULL == pInode)
-// 	{
-// 		return;
-// 	}
-// 	/* 所建立是设备文件 */
-// 	if ((pInode->i_mode & (Inode::IFBLK | Inode::IFCHR)) != 0)
-// 	{
-// 		pInode->i_addr[0] = u.u_arg[2];
-// 	}
-// 	this->m_InodeTable->IPut(pInode);
-// }
 
 //  列出当前Inode节点的文件项
 void FileManager::Ls() {
