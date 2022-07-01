@@ -55,47 +55,23 @@ public:
 							经过bmap转换得到的物理盘块号。将rablock作为静态变量的原因：调用一次bmap的开销
 							对当前块和预读块的逻辑块号进行转换，bmap返回当前块的物理盘块号，并且将预读块
 							的物理盘块号保存在rablock中。 */
-	
-	/* Functions */
 public:
-	/* Constructors */
 	Inode();
-	/* Destructors */
 	~Inode();
-	
-	/* 
-	 * @comment 根据Inode对象中的物理磁盘块索引表，读取相应
-	 * 的文件数据
-	 */
+	/*根据Inode对象中的物理磁盘块索引表，读取相应的文件数据*/
 	void ReadI();
-	/* 
-	 * @comment 根据Inode对象中的物理磁盘块索引表，将数据写入文件
-	 */
+	/* 根据Inode对象中的物理磁盘块索引表，将数据写入文件*/
 	void WriteI();
-	/* 
-	 * @comment 将文件的逻辑块号转换成对应的物理盘块号
-	 */
+	/* 将文件的逻辑块号转换成对应的物理盘块号*/
 	int Bmap(int lbn);
-	
-	/* 
-	 * @comment 更新外存Inode的最后的访问时间、修改时间
-	 */
+	/* 更新外存Inode的最后的访问时间、修改时间*/
 	void IUpdate(int time);
-	/* 
-	 * @comment 释放Inode对应文件占用的磁盘块
-	 */
+	/*释放Inode对应文件占用的磁盘块*/
 	void ITrunc();
-
-	/* 
-	 * @comment 清空Inode对象中的数据
-	 */
+	/* 清空Inode对象中的数据*/
 	void Clean();
-	/* 
-	 * @comment 将包含外存Inode字符块中信息拷贝到内存Inode中
-	 */
+	/* 将包含外存Inode字符块中信息拷贝到内存Inode中*/
 	void ICopy(Buf* bp, int inumber);
-	
-	/* Members */
 public:
 	unsigned int i_flag;	/* 状态的标志位，定义见enum INodeFlag */
 	unsigned int i_mode;	/* 文件工作方式信息 */

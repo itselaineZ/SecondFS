@@ -42,7 +42,6 @@ void Help() {
         "seek <file> <offset> <origin>      : 移动读写指针\n"
         "write <file1> <file2> <size>       : 将file2中内容写入file1,指定写入size字节\n"
         "read <file1> [-o <file2>] <size>   : 将file1内容输出到file2,默认输出到shell\n"
-        "autoTest                           : 使用自动测试\n"
         ;
     cout << man;
     return;

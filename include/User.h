@@ -11,11 +11,7 @@ using namespace std;    //  for string
 
 
 class Inode;
-
-/*
- * @comment 该类与Unixv6中 struct user结构对应，因此只改变
- * 类名，不修改成员结构名字，关于数据类型的对应关系如下:
- */
+/*该类与Unixv6中 struct user结构对应，因此只改变类名，不修改成员结构名字，关于数据类型的对应关系如下:*/
 class User
 {
 public:
@@ -58,8 +54,7 @@ public:
 		U_EROFS	= 30,	/* Read-only file system */
 		U_EMLINK	= 31,	/* Too many links */
 		U_EPIPE	= 32,	/* Broken pipe */
-		U_ENOSYS	= 100,
-		//U_EFAULT	= 106
+		U_ENOSYS	= 100
 	};
 
 public:
@@ -76,33 +71,25 @@ public:
     void Seek(string fd, string offset, string origin);
     void Write(string fd, string inFile, string size);
     void Read(string fd, string outFile, string size);
-
 	/* 系统调用相关成员 */
 	unsigned int	u_ar0[5];		/* 指向核心栈现场保护区中EAX寄存器
 								存放的栈单元，本字段存放该栈单元的地址。
 								在V6中r0存放系统调用的返回值给用户程序，
 								x86平台上使用EAX存放返回值，替代u.u_ar0[R0] */
-
 	int u_arg[5];				/* 存放当前系统调用参数 */
 	string u_dirp;				/* 系统调用参数(一般用于Pathname)的指针 */
-
 	/* 文件系统相关成员 */
 	Inode* u_cdir;		/* 指向当前目录的Inode指针 */
 	Inode* u_pdir;		/* 指向父目录的Inode指针 */
-
 	DirectoryEntry u_dent;					/* 当前目录的目录项 */
 	char u_dbuf[DirectoryEntry::DIRSIZ];	/* 当前路径分量 */
 	string u_curdir;						/* 当前工作目录完整路径 */
-
 	ErrorCode u_error;			/* 存放错误码 */
-
 	/* 文件系统相关成员 */
 	OpenFiles u_ofiles;		/* 进程打开文件描述符表对象 */
-
 	/* 文件I/O操作 */
 	IOParameter u_IOParam;	/* 记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数 */
 	string u_ls;
-
 private:
     bool IsError();
     void EchoError(enum ErrorCode err);
