@@ -1,8 +1,7 @@
 #ifndef INODE_H
 #define INODE_H
 
-#include "Buf.h"
-
+class Buf;
 /*
  * 内存索引节点(INode)的定义
  * 系统中每一个打开的文件、当前访问目录、

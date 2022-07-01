@@ -12,31 +12,13 @@ DiskDriver::~DiskDriver(){
     }
 }
 
-void DiskDriver::Initialize(){
+void DiskDriver::Initialize() {
     fp = fopen(DISK_FILE_NAME, "wb+");
-    if (fp == NULL){
-        printf("Open File %s Error!\n", DISK_FILE_NAME);
+    if (fp == NULL) {
+        printf("Initialize %s failed\n", DISK_FILE_NAME);
         exit(-1);
     }
 }
-
-//  检查镜像文件是否存在
-bool DiskDriver::Exists() {
-    return fp != NULL;
-}
-
-/*
-void DiskDriver::IO(Buf* bp){
-    if (bp->b_flags & Buf::B_WRITE){ //  写操作
-        if (offset >= 0) {
-            fseek(fp, offset, origin);
-        }
-        fread(buffer, size, 1, fp);
-    }
-    else if (bp->b_flasg & Buf::B_READ){    //  读操作
-
-    }
-}*/
 
 void DiskDriver::read(void* buffer, unsigned int size, int offset, unsigned int origin) {
     if (offset >= 0)
@@ -49,6 +31,7 @@ void DiskDriver::write(const void* buffer, unsigned int size, int offset, unsign
         fseek(fp, offset, origin);
     fwrite(buffer, size, 1, fp);
 }
-void DiskDriver::close(){
-    fclose(fp);
+
+bool DiskDriver::Exists() {
+    return fp != NULL;
 }

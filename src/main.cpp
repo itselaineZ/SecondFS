@@ -3,30 +3,30 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "Inode.cpp"
-#include "File.cpp"
-#include "FileManager.cpp"
-#include "BufferManager.cpp"
-#include "FileSystem.cpp"
-#include "OpenFileManager.cpp"
-#include "User.cpp"
-#include "Kernel.cpp"
-#include "Utility.cpp"
-#include "DiskDriver.cpp"
+#include "../include/BufferManager.h"
+#include "../include/FileManager.h"
+#include "../include/FileSystem.h"
+#include "../include/OpenFileManager.h"
+#include "../include/DiskDriver.h"
+#include "../include/User.h"
 using namespace std;
+/*
+ * 设备管理、高速缓存管理全局manager
+ */
+DiskDriver g_DiskDriver;
+BufferManager g_BufferManager;
+/* 系统全局打开文件表对象实例的定义 */
+OpenFileTable g_OpenFileTable;
+SuperBlock g_spb;
+/*
+ * 文件系统相关全局manager
+ */
+FileSystem g_FileSystem;
+/*  定义内存Inode表的实例 */
+InodeTable g_InodeTable;
+FileManager g_FileManager;
 
- extern OpenFileTable g_OpenFileTable;
-// extern InodeTable g_InodeTable;
- extern BufferManager g_BufferManager;
- extern FileSystem g_FileSystem;
-
-
-extern DiskDriver d_DiskDriver;
-
-SuperBlock g_SuperBlock;
-extern InodeTable g_InodeTable;
 User g_User;
-extern FileManager g_FileManager;
 
 void Help() {
     string man = 
@@ -48,17 +48,7 @@ void Help() {
     return;
 }
 
-void InitSystem() {
-    cout << "Initializing System....\n";
-    FileManager *fileManager = &g_FileManager;
-    fileManager->rootDirInode = g_InodeTable.IGet(FileSystem::ROOTINO);
-    fileManager->rootDirInode->i_mode |= Inode::IFDIR;
-    g_User = User();
-}
-
 int main() {
-
-    InitSystem();
 
     User* user = &g_User;
     vector<string>arg;
@@ -91,12 +81,10 @@ int main() {
             g_InodeTable.Format();
             g_BufferManager.FormatBuffer();
             g_FileSystem.FormatFS();
-            d_DiskDriver.close();
             cout << "Format Successfully, will be shut down automatically.\n";
             exit(0);
         }
         else if (arg[0] == "exit") {
-            d_DiskDriver.close();
             exit(0);
         }
         else if (arg[0] == "autoTest") {

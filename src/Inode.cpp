@@ -1,5 +1,7 @@
 #include "../include/Inode.h"
-#include "../include/Kernel.h"
+#include "../include/User.h"
+#include "../include/BufferManager.h"
+#include "../include/FileSystem.h"
 #include "../include/Utility.h"
 
 extern User g_User;

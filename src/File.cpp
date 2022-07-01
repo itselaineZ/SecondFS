@@ -1,5 +1,5 @@
 #include "../include/File.h"
-#include "../include/Kernel.h"
+#include "../include/User.h"
 #include "../include/Utility.h"
 
 extern User g_User;
@@ -14,12 +14,13 @@ File::File()
 
 File::~File()
 {
-	//nothing to do here
+	// nothing to do here
 }
 
 /*==============================class OpenFiles===================================*/
 OpenFiles::OpenFiles()
 {
+	Utility::MemSet(ProcessOpenFileTable, NULL, sizeof(ProcessOpenFileTable));
 }
 
 OpenFiles::~OpenFiles()
@@ -29,48 +30,49 @@ OpenFiles::~OpenFiles()
 int OpenFiles::AllocFreeSlot()
 {
 	int i;
-	User& u = g_User;
-	
-	for(i = 0; i < OpenFiles::NOFILES; i++)
+	User &u = g_User;
+
+	for (i = 0; i < OpenFiles::NOFILES; i++)
 	{
 		/* 进程打开文件描述符表中找到空闲项，则返回之 */
-		if(this->ProcessOpenFileTable[i] == NULL)
+		if (this->ProcessOpenFileTable[i] == NULL)
 		{
+
 			/* 设置核心栈现场保护区中的EAX寄存器的值，即系统调用返回值 */
 			u.u_ar0[User::EAX] = i;
 			return i;
 		}
 	}
 
-	u.u_ar0[User::EAX] = -1;   /* Open1，需要一个标志。当打开文件结构创建失败时，可以回收系统资源*/
+	u.u_ar0[User::EAX] = -1; /* Open1，需要一个标志。当打开文件结构创建失败时，可以回收系统资源*/
 	u.u_error = User::U_EMFILE;
 	return -1;
 }
 
-File* OpenFiles::GetF(int fd)
+File *OpenFiles::GetF(int fd)
 {
-	File* pFile;
-	User& u = g_User;
-	
+	File *pFile;
+	User &u = g_User;
+
 	/* 如果打开文件描述符的值超出了范围 */
-	if(fd < 0 || fd >= OpenFiles::NOFILES)
+	if (fd < 0 || fd >= OpenFiles::NOFILES)
 	{
 		u.u_error = User::U_EBADF;
 		return NULL;
 	}
 
 	pFile = this->ProcessOpenFileTable[fd];
-	if(pFile == NULL)
+	if (pFile == NULL)
 	{
 		u.u_error = User::U_EBADF;
 	}
 
-	return pFile;	/* 即使pFile==NULL也返回它，由调用GetF的函数来判断返回值 */
+	return pFile; /* 即使pFile==NULL也返回它，由调用GetF的函数来判断返回值 */
 }
 
-void OpenFiles::SetF(int fd, File* pFile)
+void OpenFiles::SetF(int fd, File *pFile)
 {
-	if(fd < 0 || fd >= OpenFiles::NOFILES)
+	if (fd < 0 || fd >= OpenFiles::NOFILES)
 	{
 		return;
 	}
@@ -88,6 +90,5 @@ IOParameter::IOParameter()
 
 IOParameter::~IOParameter()
 {
-	//nothing to do here
+	// nothing to do here
 }
-

@@ -7,6 +7,8 @@
 #include "FileSystem.h"
 #include "User.h"
 
+class User;
+
 /*
  * Kernel类用于封装所有内核相关的全局类实例对象，
  * 例如PageManager, ProcessManager等。

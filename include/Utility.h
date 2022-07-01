@@ -2,7 +2,9 @@
 #define UITILITY_H
 
 #include <ctime>
+#include <cstring>
 
+class User;
 /*
  *@comment 定义一些工具常量
  * 由于使用了编译选项-fno-builtin，

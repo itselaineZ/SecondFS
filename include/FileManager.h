@@ -1,9 +1,12 @@
 #ifndef FILE_MANAGER_H
 #define FILE_MANAGER_H
 
-#include "FileSystem.h"
-#include "OpenFileManager.h"
 #include "File.h"
+
+class Inode;
+class FileSystem;
+class InodeTable;
+class OpenFileTable;
 
 /* 
  * 文件管理类(FileManager)
@@ -100,11 +103,6 @@ public:
 	 * @comment 设置当前工作路径
 	 */
 	void SetCurDir(char* pathname);
-
-	/* 
-	 * @comment 检查对文件或目录的搜索、访问权限，作为系统调用的辅助函数
-	 */
-	int Access(Inode* pInode, unsigned int mode);
 
 	/* 改变当前工作目录 */
 	void ChDir();

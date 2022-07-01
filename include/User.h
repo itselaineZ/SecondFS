@@ -1,10 +1,16 @@
 #ifndef USER_H
 #define USER_H
 
-#include "Process.h"
+#include <iostream>
+#include <string.h>
+#include <fstream>
+using namespace std;    //  for string
+
 #include "File.h"
-#include "INode.h"
 #include "FileManager.h"
+
+
+class Inode;
 
 /*
  * @comment 该类与Unixv6中 struct user结构对应，因此只改变

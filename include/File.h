@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "INode.h"
+class Inode;
 
 /*
  * 打开文件控制块File类。

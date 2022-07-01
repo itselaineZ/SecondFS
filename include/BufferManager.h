@@ -1,16 +1,19 @@
 #ifndef BUFFER_MANAGER_H
 #define BUFFER_MANAGER_H
 
-#include <map>
+#include <bits/stdc++.h>
+#include <unordered_map>
 #include "Buf.h"
-#include "DiskDriver.h"
-//using namespace std;
+using namespace std;
+
+class DiskDriver;
+//class Kernel;
 
 class BufferManager
 {
 public:
 	/* static const member */
-	static const int NBUF = 15;			/* 缓存控制块、缓冲区的数量 */
+	static const int NBUF = 100;			/* 缓存控制块、缓冲区的数量 */
 	static const int BUFFER_SIZE = 512;	/* 缓冲区大小。 以字节为单位 */
 
 public:

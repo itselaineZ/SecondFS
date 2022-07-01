@@ -1,16 +1,18 @@
 #include "../include/OpenFileManager.h"
-#include "../include/Kernel.h"
+#include "../include/User.h"
+#include "../include/BufferManager.h"
 #include "../include/Utility.h"
-/*==============================class InodeTable===================================*/
-/*  定义内存Inode表的实例 */
-InodeTable g_InodeTable;
+#include "../include/FileSystem.h"
 
+/*==============================class InodeTable===================================*/
+/*  声明内存Inode表的实例 */
+extern InodeTable g_InodeTable;
 extern User g_User;
 extern FileSystem g_FileSystem;
 extern BufferManager g_BufferManager;
 /*==============================class OpenFileTable===================================*/
-/* 系统全局打开文件表对象实例的定义 */
-OpenFileTable g_OpenFileTable;
+/* 系统全局打开文件表对象实例的声明 */
+extern OpenFileTable g_OpenFileTable;
 
 OpenFileTable::OpenFileTable()
 {
@@ -59,7 +61,7 @@ File *OpenFileTable::FAlloc()
 		}
 	}
 
-	cout<<"No Free File Struct\n";
+	cout << "No Free File Struct\n";
 	u.u_error = User::U_ENFILE;
 	return NULL;
 }
@@ -68,11 +70,11 @@ void OpenFileTable::CloseF(File *pFile)
 {
 	/* 引用当前File的进程数减1 */
 	pFile->f_count--;
-	if (pFile->f_count <= 0) {
+	if (pFile->f_count <= 0)
+	{
 		g_InodeTable.IPut(pFile->f_inode);
 	}
 }
-
 
 InodeTable::InodeTable()
 {
@@ -125,10 +127,10 @@ Inode *InodeTable::IGet(int inumber)
 	pInode->i_count++;
 	BufferManager &bm = g_BufferManager;
 	/* 将该外存Inode读入缓冲区 */
-	
+
 	Buf *pBuf = bm.Bread(FileSystem::INODE_ZONE_START_SECTOR + inumber / FileSystem::INODE_NUMBER_PER_SECTOR);
 	/* 将缓冲区中的外存Inode信息拷贝到新分配的内存Inode中 */
-	pInode->ICopy(pBuf, inumber);
+    pInode->ICopy(pBuf, inumber);
 	/* 释放缓存 */
 	bm.Brelse(pBuf);
 	return pInode;
@@ -175,7 +177,7 @@ void InodeTable::IPut(Inode *pNode)
 
 	/* 减少内存Inode的引用计数，唤醒等待进程 */
 	pNode->i_count--;
-	// pNode->Prele();
+	//  pNode->Prele();
 }
 
 void InodeTable::UpdateInodeTable()

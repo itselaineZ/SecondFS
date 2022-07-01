@@ -1,13 +1,14 @@
 #ifndef OPEN_FILE_MANAGER_H
 #define OPEN_FILE_MANAGER_H
 
-#include "INode.h"
+#include "Inode.h"
 #include "File.h"
-#include "FileSystem.h"
 
 /* Forward Declaration */
 class OpenFileTable;
 class InodeTable;
+class FileSystem;
+//class Inode;
 
 /* 以下2个对象实例定义在OpenFileManager.cpp文件中 */
 extern InodeTable g_InodeTable;

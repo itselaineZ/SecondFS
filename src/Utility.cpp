@@ -1,6 +1,5 @@
 #pragma
 #include "../include/Utility.h"
-#include "../include/User.h"
 
 void Utility::MemSet(void *s, int ch, size_t n) {
 	::memset(s, ch, n);

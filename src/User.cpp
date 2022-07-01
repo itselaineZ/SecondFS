@@ -1,8 +1,7 @@
 #include "../include/User.h"
-#include <string.h>
-#include <fstream>
-using namespace std;    //  for string
+#include "../include/Inode.h"
 
+extern User g_User;
 extern FileManager g_FileManager;
 
 User::User() {
@@ -30,12 +29,12 @@ void User::Mkdir(string dirName) {
 }
 
 void User::Ls() {
-    g_User.u_ls.clear();
+    u_ls.clear();
     fileManager->Ls();
     if (IsError()) {
         return;
     }
-    cout << g_User.u_ls << endl;
+    cout << u_ls << endl;
 }
 
 void User::Cd(string dirName) {
@@ -164,7 +163,7 @@ void User::Read(string sfd, string outFile, string size) {
     char *buffer = new char[usize];
     //cout << "fd = " << fd << " outFile = " << outFile << " size = " << size << "\n";
     u_arg[0] = fd;
-    u_arg[1] = (long long)(buffer);
+    u_arg[1] = (long)(buffer);
     u_arg[2] = usize;
     fileManager->Read();
     if (IsError())
